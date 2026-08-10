@@ -1,0 +1,2861 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>M3RAFSH — Local Fashion Marketplace</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,340..800;1,9..144,500..700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+<style>
+:root{
+  --ink:#15130F;
+  --ink-soft:#3A362F;
+  --porcelain:#F6F2E9;
+  --paper:#FBF9F4;
+  --sand:#E6DECB;
+  --sand-line:#D8CDB2;
+  --brick:#A8431C;
+  --brick-dark:#7E3115;
+  --teal:#1F5C56;
+  --teal-dark:#123D38;
+  --gold:#B9873B;
+  --ok:#3E6B4A;
+  --err:#A23A2E;
+  --radius:2px;
+  --shadow:0 1px 2px rgba(21,19,15,0.06), 0 8px 24px rgba(21,19,15,0.06);
+  --shadow-lg:0 20px 60px rgba(21,19,15,0.18);
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+html,body{background:var(--porcelain); color:var(--ink); font-family:'Inter',sans-serif; -webkit-font-smoothing:antialiased;}
+#root{min-height:100vh; overflow-x:hidden;}
+img,svg{display:block; max-width:100%;}
+button{font-family:inherit; cursor:pointer;}
+a{color:inherit; text-decoration:none;}
+input,select,textarea{font-family:inherit; font-size:14px;}
+::selection{background:var(--brick); color:#fff;}
+.serif{font-family:'Fraunces',serif;}
+.mono{font-family:'JetBrains Mono',monospace;}
+.eyebrow{font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.14em; text-transform:uppercase; color:var(--ink-soft);}
+.wrap{max-width:1280px; margin:0 auto; padding:0 32px;}
+@media(max-width:720px){.wrap{padding:0 18px;}}
+
+.btn{display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:13px 26px; font-size:13px; font-weight:600; letter-spacing:0.03em; text-transform:uppercase; border:1px solid var(--ink); border-radius:var(--radius); background:var(--ink); color:var(--paper); transition:all .18s ease; white-space:nowrap;}
+.btn:hover{background:var(--brick); border-color:var(--brick);}
+.btn:disabled{opacity:.45; cursor:not-allowed;}
+.btn-outline{background:transparent; color:var(--ink); border:1px solid var(--ink);}
+.btn-outline:hover{background:var(--ink); color:var(--paper);}
+.btn-ghost{background:transparent; border:1px solid transparent; color:var(--ink);}
+.btn-ghost:hover{border-color:var(--sand-line); background:var(--paper);}
+.btn-sm{padding:9px 16px; font-size:11.5px;}
+.btn-block{width:100%;}
+.link-btn{background:none; border:none; text-decoration:underline; text-underline-offset:3px; font-size:13px; color:var(--ink-soft); padding:0;}
+.link-btn:hover{color:var(--brick);}
+
+.site-header{position:sticky; top:0; z-index:60; background:rgba(246,242,233,0.92); backdrop-filter:blur(10px); border-bottom:1px solid var(--sand-line);}
+.header-row{display:flex; align-items:center; justify-content:space-between; height:76px; gap:24px;}
+.logo{font-family:'Fraunces',serif; font-weight:700; font-size:24px; letter-spacing:0.01em;}
+.logo b{color:var(--brick);}
+.nav-main{display:flex; align-items:center; gap:30px;}
+.nav-main a{font-size:13px; font-weight:600; letter-spacing:0.04em; text-transform:uppercase; color:var(--ink-soft); position:relative; padding:6px 0;}
+.nav-main a:hover, .nav-main a.active{color:var(--ink);}
+.nav-main a.active:after{content:''; position:absolute; left:0; right:0; bottom:-2px; height:2px; background:var(--brick);}
+.nav-icons{display:flex; align-items:center; gap:6px;}
+.icon-btn{position:relative; width:38px; height:38px; display:flex; align-items:center; justify-content:center; border-radius:50%; border:none; background:transparent; color:var(--ink);}
+.icon-btn:hover{background:var(--sand);}
+.badge{position:absolute; top:1px; right:1px; min-width:16px; height:16px; padding:0 3px; border-radius:8px; background:var(--brick); color:#fff; font-size:9.5px; font-weight:700; display:flex; align-items:center; justify-content:center; font-family:'JetBrains Mono',monospace;}
+.acct-pill{display:flex; align-items:center; gap:8px; padding:6px 14px 6px 6px; border-radius:20px; border:1px solid var(--sand-line); background:var(--paper); font-size:12.5px; font-weight:600;}
+.avatar{width:26px; height:26px; border-radius:50%; background:var(--teal); color:#fff; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; font-family:'Fraunces',serif;}
+.hamburger{display:none; width:38px; height:38px; align-items:center; justify-content:center; border:none; background:transparent;}
+@media(max-width:900px){.nav-main{display:none;} .hamburger{display:flex;}}
+
+.mobile-drawer{position:fixed; inset:0; z-index:100; display:flex;}
+.mobile-drawer .scrim{position:absolute; inset:0; background:rgba(21,19,15,0.45);}
+.mobile-drawer .panel{position:relative; margin-left:auto; width:82%; max-width:340px; height:100%; background:var(--paper); padding:26px 24px; overflow-y:auto; animation:slideIn .22s ease;}
+@keyframes slideIn{from{transform:translateX(100%)} to{transform:translateX(0)}}
+.mobile-drawer a{display:block; padding:14px 0; font-size:16px; font-weight:600; border-bottom:1px solid var(--sand-line);}
+
+.hero{position:relative; background:var(--ink); color:var(--paper); overflow:hidden;}
+.hero-inner{position:relative; z-index:2; padding:120px 32px 100px; max-width:1280px; margin:0 auto; display:grid; grid-template-columns:1.1fr 0.9fr; gap:40px; align-items:center;}
+@media(max-width:900px){.hero-inner{grid-template-columns:1fr; padding:70px 20px 60px;}}
+.hero-eyebrow{color:var(--gold); margin-bottom:22px;}
+.hero h1{font-family:'Fraunces',serif; font-weight:340; font-style:italic; font-size:clamp(40px,6vw,78px); line-height:0.98; letter-spacing:-0.01em; margin-bottom:24px;}
+.hero h1 b{font-style:normal; font-weight:700; color:var(--gold); display:block;}
+.hero p{font-size:16px; color:#D9D3C5; max-width:440px; line-height:1.6; margin-bottom:34px;}
+.hero-ctas{display:flex; gap:14px; flex-wrap:wrap;}
+.hero .btn{border-color:var(--paper); background:var(--paper); color:var(--ink);}
+.hero .btn:hover{background:var(--gold); border-color:var(--gold); color:var(--ink);}
+.hero .btn-outline{background:transparent; color:var(--paper); border-color:rgba(251,249,244,0.4);}
+.hero .btn-outline:hover{background:rgba(251,249,244,0.1); border-color:var(--paper);}
+.hero-visual{position:relative; height:420px; display:flex; align-items:center; justify-content:center;}
+@media(max-width:900px){.hero-visual{height:260px;}}
+.thread-line{position:absolute; inset:0; opacity:.5;}
+
+.section{padding:88px 0;}
+.section-tight{padding:56px 0;}
+.section-head{display:flex; align-items:flex-end; justify-content:space-between; margin-bottom:40px; gap:20px; flex-wrap:wrap;}
+.section-head h2{font-family:'Fraunces',serif; font-size:clamp(26px,3.4vw,40px); font-weight:500; letter-spacing:-0.01em;}
+.section-head p{color:var(--ink-soft); font-size:14px; max-width:420px; margin-top:6px;}
+
+.cat-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:18px;}
+@media(max-width:800px){.cat-grid{grid-template-columns:1fr;}}
+.cat-card{position:relative; height:380px; border-radius:var(--radius); overflow:hidden; cursor:pointer; background:var(--ink);}
+.cat-card .cg{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; transition:transform .5s ease;}
+.cat-card:hover .cg{transform:scale(1.06);}
+.cat-card .ov{position:absolute; inset:0; background:linear-gradient(180deg, transparent 30%, rgba(21,19,15,0.82) 100%);}
+.cat-card .lbl{position:absolute; left:22px; bottom:22px; color:#fff; z-index:2;}
+.cat-card .lbl .eyebrow{color:var(--gold); margin-bottom:4px;}
+.cat-card .lbl h3{font-family:'Fraunces',serif; font-size:30px; font-weight:500;}
+.cat-card .arrow{position:absolute; top:20px; right:20px; width:38px; height:38px; border-radius:50%; border:1px solid rgba(255,255,255,0.5); display:flex; align-items:center; justify-content:center; color:#fff; z-index:2; transition:all .2s;}
+.cat-card:hover .arrow{background:var(--gold); border-color:var(--gold);}
+
+.prod-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:26px 22px;}
+@media(max-width:1080px){.prod-grid{grid-template-columns:repeat(3,1fr);}}
+@media(max-width:720px){.prod-grid{grid-template-columns:repeat(2,1fr); gap:18px 12px;}}
+.prod-card{cursor:pointer;}
+.prod-media{position:relative; aspect-ratio:3/4; background:var(--sand); border-radius:var(--radius); overflow:hidden; margin-bottom:12px;}
+.prod-media svg, .prod-media img{position:absolute; inset:0; width:100%; height:100%; transition:transform .45s ease;}
+.prod-card:hover .prod-media svg, .prod-card:hover .prod-media img{transform:scale(1.05);}
+.prod-tags{position:absolute; top:10px; left:10px; display:flex; flex-direction:column; gap:6px; z-index:2;}
+.tag-chip{font-family:'JetBrains Mono',monospace; font-size:10px; font-weight:600; letter-spacing:.05em; text-transform:uppercase; padding:4px 8px; border-radius:2px; background:var(--ink); color:#fff;}
+.tag-chip.sale{background:var(--brick);}
+.fav-btn{position:absolute; top:8px; right:8px; z-index:2; width:32px; height:32px; border-radius:50%; background:rgba(251,249,244,0.92); border:none; display:flex; align-items:center; justify-content:center; transition:transform .15s;}
+.fav-btn:hover{transform:scale(1.08);}
+.fav-btn.on svg{fill:var(--brick); stroke:var(--brick);}
+.quick-add{position:absolute; left:8px; right:8px; bottom:8px; z-index:2; opacity:0; transform:translateY(6px); transition:all .18s;}
+.prod-card:hover .quick-add{opacity:1; transform:translateY(0);}
+.prod-info .b{font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-soft); font-weight:600; margin-bottom:2px;}
+.prod-info .n{font-size:14px; font-weight:500; margin-bottom:4px; line-height:1.3;}
+.prod-info .price{font-family:'JetBrains Mono',monospace; font-size:13px; display:flex; gap:8px; align-items:center;}
+.prod-info .price .strike{text-decoration:line-through; color:var(--ink-soft); font-weight:400;}
+.prod-info .price .now{font-weight:600; color:var(--brick);}
+
+.brand-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:22px;}
+@media(max-width:900px){.brand-grid{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:600px){.brand-grid{grid-template-columns:1fr;}}
+.brand-card{border:1px solid var(--sand-line); border-radius:var(--radius); overflow:hidden; background:var(--paper); transition:box-shadow .2s;}
+.brand-card:hover{box-shadow:var(--shadow);}
+.brand-cover{height:180px; position:relative; overflow:hidden;}
+.brand-cover svg{width:100%; height:100%;}
+.brand-body{padding:20px;}
+.brand-logo-row{display:flex; align-items:center; gap:10px; margin-bottom:10px;}
+.brand-mark{width:38px; height:38px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:'Fraunces',serif; font-weight:700; color:#fff; font-size:15px;}
+.brand-body h3{font-family:'Fraunces',serif; font-size:19px; font-weight:600;}
+.brand-body p{font-size:13px; color:var(--ink-soft); line-height:1.5; margin:8px 0 14px;}
+.brand-count{font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--ink-soft);}
+
+.promo{background:var(--teal); color:var(--paper); border-radius:var(--radius); padding:56px 48px; display:flex; align-items:center; justify-content:space-between; gap:30px; flex-wrap:wrap;}
+.promo h3{font-family:'Fraunces',serif; font-style:italic; font-weight:400; font-size:clamp(24px,3vw,36px);}
+.promo .btn{background:var(--paper); color:var(--teal); border-color:var(--paper);}
+.promo .btn:hover{background:var(--gold); border-color:var(--gold); color:var(--ink);}
+
+.newsletter{background:var(--sand); border-radius:var(--radius); padding:60px 48px; text-align:center;}
+.newsletter h3{font-family:'Fraunces',serif; font-size:30px; margin-bottom:10px;}
+.newsletter p{color:var(--ink-soft); margin-bottom:26px; font-size:14px;}
+.nl-form{display:flex; gap:10px; max-width:420px; margin:0 auto;}
+.nl-form input{flex:1; padding:13px 16px; border:1px solid var(--ink); border-radius:2px; background:var(--paper);}
+
+.site-footer{background:var(--ink); color:#B9B3A3; padding:64px 0 26px; margin-top:60px;}
+.foot-grid{display:grid; grid-template-columns:1.4fr repeat(3,1fr); gap:30px; margin-bottom:50px;}
+@media(max-width:800px){.foot-grid{grid-template-columns:1fr 1fr;}}
+.foot-grid h4{color:#fff; font-size:12px; text-transform:uppercase; letter-spacing:.08em; margin-bottom:16px;}
+.foot-grid a, .foot-grid li{display:block; font-size:13px; padding:6px 0; color:#B9B3A3;}
+.foot-grid a:hover{color:#fff;}
+.foot-bottom{border-top:1px solid #33302A; padding-top:22px; display:flex; justify-content:space-between; font-size:12px; flex-wrap:wrap; gap:10px;}
+.foot-bottom .link-btn{color:#8B8677;}
+
+.crumbs{display:flex; gap:8px; align-items:center; font-size:12px; color:var(--ink-soft); margin-bottom:24px; flex-wrap:wrap;}
+.crumbs a:hover{color:var(--brick); text-decoration:underline;}
+.crumbs span{opacity:.5;}
+
+.shop-head{padding-top:40px;}
+.shop-layout{display:grid; grid-template-columns:230px 1fr; gap:36px; align-items:flex-start;}
+@media(max-width:860px){.shop-layout{grid-template-columns:1fr;}}
+.filter-box{border:1px solid var(--sand-line); border-radius:var(--radius); padding:18px; margin-bottom:14px; background:var(--paper);}
+.filter-box h5{font-size:11px; text-transform:uppercase; letter-spacing:.06em; margin-bottom:12px; color:var(--ink-soft); font-weight:700;}
+.filter-opt{display:flex; align-items:center; gap:9px; padding:6px 0; font-size:13.5px; cursor:pointer;}
+.filter-opt input{accent-color:var(--brick); width:15px; height:15px;}
+.swatch-row{display:flex; flex-wrap:wrap; gap:8px;}
+.swatch{width:24px; height:24px; border-radius:50%; border:1.5px solid var(--sand-line); cursor:pointer; position:relative;}
+.swatch.sel{outline:2px solid var(--ink); outline-offset:2px;}
+.range-row{display:flex; justify-content:space-between; font-family:'JetBrains Mono',monospace; font-size:11.5px; margin-top:8px;}
+.shop-toolbar{display:flex; justify-content:space-between; align-items:center; margin-bottom:22px; gap:14px; flex-wrap:wrap;}
+.result-count{font-size:13px; color:var(--ink-soft);}
+.sort-select{padding:9px 12px; border:1px solid var(--sand-line); border-radius:2px; background:var(--paper); font-size:12.5px;}
+.searchbar{display:flex; align-items:center; gap:10px; border:1px solid var(--ink); border-radius:2px; padding:10px 14px; margin-bottom:22px; background:var(--paper);}
+.searchbar input{flex:1; border:none; outline:none; background:transparent; font-size:14px;}
+.empty-state{padding:70px 20px; text-align:center; color:var(--ink-soft);}
+.empty-state h3{font-family:'Fraunces',serif; font-size:22px; color:var(--ink); margin-bottom:8px;}
+
+.pdp{display:grid; grid-template-columns:1fr 460px; gap:56px; padding-top:36px;}
+@media(max-width:960px){.pdp{grid-template-columns:1fr; gap:30px;}}
+.pdp-gallery-main{aspect-ratio:4/5; background:var(--sand); border-radius:var(--radius); overflow:hidden; margin-bottom:12px; cursor:zoom-in; position:relative;}
+.pdp-gallery-main svg, .pdp-gallery-main img{width:100%; height:100%; object-fit:cover;}
+.pdp-thumbs{display:flex; gap:10px;}
+.pdp-thumb{width:70px; height:88px; border-radius:2px; overflow:hidden; border:2px solid transparent; cursor:pointer; background:var(--sand); position:relative;}
+.pdp-thumb img{width:100%; height:100%; object-fit:cover;}
+.pdp-thumb.sel{border-color:var(--ink);}
+.pdp-side .brand-link{font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--teal); margin-bottom:8px; display:inline-block;}
+.pdp-side h1{font-family:'Fraunces',serif; font-size:30px; font-weight:500; margin-bottom:10px; line-height:1.15;}
+.pdp-price{font-family:'JetBrains Mono',monospace; font-size:19px; margin-bottom:18px; display:flex; gap:10px; align-items:center;}
+.pdp-price .strike{text-decoration:line-through; color:var(--ink-soft); font-weight:400; font-size:15px;}
+.pdp-price .now{color:var(--brick); font-weight:700;}
+.pdp-desc{font-size:14px; line-height:1.7; color:var(--ink-soft); margin-bottom:26px;}
+.opt-block{margin-bottom:22px;}
+.opt-label{display:flex; justify-content:space-between; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; margin-bottom:10px;}
+.opt-label button{font-weight:500; text-transform:none; text-decoration:underline; background:none; border:none; font-size:12.5px; color:var(--ink-soft);}
+.size-row{display:flex; flex-wrap:wrap; gap:8px;}
+.size-chip{min-width:44px; padding:9px 12px; border:1px solid var(--sand-line); border-radius:2px; font-size:12.5px; font-weight:600; text-align:center; cursor:pointer; background:var(--paper);}
+.size-chip.sel{border-color:var(--ink); background:var(--ink); color:#fff;}
+.size-chip.oos{opacity:.35; text-decoration:line-through; cursor:not-allowed;}
+.qty-row{display:flex; align-items:center; border:1px solid var(--sand-line); border-radius:2px; width:fit-content;}
+.qty-row button{width:38px; height:38px; background:none; border:none; font-size:16px;}
+.qty-row span{width:34px; text-align:center; font-family:'JetBrains Mono',monospace; font-weight:600;}
+.pdp-actions{display:flex; gap:10px; margin-bottom:24px;}
+.stock-note{font-size:12.5px; margin-bottom:20px; display:flex; align-items:center; gap:6px;}
+.dot{width:7px; height:7px; border-radius:50%; background:var(--ok);}
+.dot.low{background:var(--gold);}
+.accordion{border-top:1px solid var(--sand-line);}
+.acc-item{border-bottom:1px solid var(--sand-line);}
+.acc-head{display:flex; justify-content:space-between; align-items:center; padding:16px 0; cursor:pointer; font-size:13px; font-weight:600;}
+.acc-body{padding-bottom:16px; font-size:13px; color:var(--ink-soft); line-height:1.65;}
+
+.related-strip{display:flex; gap:20px; overflow-x:auto; padding-bottom:8px;}
+.related-strip .prod-card{min-width:220px;}
+
+.drawer-scrim{position:fixed; inset:0; background:rgba(21,19,15,0.45); z-index:120;}
+.drawer{position:fixed; top:0; right:0; bottom:0; width:440px; max-width:92vw; background:var(--paper); z-index:121; display:flex; flex-direction:column; animation:slideIn .24s ease;}
+.drawer-head{display:flex; justify-content:space-between; align-items:center; padding:22px 24px; border-bottom:1px solid var(--sand-line);}
+.drawer-head h3{font-family:'Fraunces',serif; font-size:20px;}
+.drawer-body{flex:1; overflow-y:auto; padding:14px 24px;}
+.cart-line{display:grid; grid-template-columns:74px 1fr; gap:14px; padding:16px 0; border-bottom:1px solid var(--sand-line);}
+.cart-line .cimg{width:74px; height:92px; border-radius:2px; overflow:hidden; background:var(--sand); position:relative;}
+.cimg img{width:100%; height:100%; object-fit:cover;}
+.cart-line .cname{font-size:13.5px; font-weight:600; margin-bottom:2px;}
+.cart-line .cbrand{font-size:11px; color:var(--ink-soft); text-transform:uppercase; letter-spacing:.04em;}
+.cart-line .cmeta{font-size:12px; color:var(--ink-soft); margin:4px 0;}
+.cart-line .crow{display:flex; justify-content:space-between; align-items:center; margin-top:8px;}
+.cart-line .cprice{font-family:'JetBrains Mono',monospace; font-weight:600; font-size:13px;}
+.cart-actions-row{display:flex; gap:14px; font-size:12px;}
+.drawer-foot{border-top:1px solid var(--sand-line); padding:20px 24px 26px; background:var(--paper);}
+.sum-row{display:flex; justify-content:space-between; font-size:13.5px; padding:5px 0;}
+.sum-row.total{font-weight:700; font-size:16px; padding-top:12px; border-top:1px solid var(--sand-line); margin-top:8px;}
+
+.auth-scrim{position:fixed; inset:0; background:rgba(21,19,15,0.5); z-index:150; display:flex; align-items:center; justify-content:center; padding:20px;}
+.auth-card{background:var(--paper); width:440px; max-width:100%; border-radius:var(--radius); padding:42px 38px; box-shadow:var(--shadow-lg); max-height:92vh; overflow-y:auto;}
+.auth-card h2{font-family:'Fraunces',serif; font-size:26px; margin-bottom:6px;}
+.auth-card .sub{font-size:13.5px; color:var(--ink-soft); margin-bottom:26px;}
+.field{margin-bottom:16px;}
+.field label{display:block; font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; margin-bottom:7px; color:var(--ink-soft);}
+.field input, .field select, .field textarea{width:100%; padding:12px 14px; border:1px solid var(--sand-line); border-radius:2px; background:#fff;}
+.field input:focus, .field select:focus, .field textarea:focus{outline:2px solid var(--teal); outline-offset:0; border-color:var(--teal);}
+.field .err-text{color:var(--err); font-size:11.5px; margin-top:5px;}
+.field.has-err input{border-color:var(--err);}
+.check-row{display:flex; align-items:center; gap:8px; font-size:13px; margin-bottom:20px;}
+.check-row input{accent-color:var(--brick); width:15px; height:15px;}
+.auth-switch{text-align:center; margin-top:20px; font-size:13px; color:var(--ink-soft);}
+.auth-close{position:absolute; top:16px; right:18px; background:none; border:none;}
+.auth-card{position:relative;}
+
+.checkout-grid{display:grid; grid-template-columns:1fr 400px; gap:50px; align-items:flex-start; padding-top:34px;}
+@media(max-width:960px){.checkout-grid{grid-template-columns:1fr;}}
+.steps-row{display:flex; gap:0; margin-bottom:34px; flex-wrap:wrap;}
+.step-pill{display:flex; align-items:center; gap:8px; font-size:12px; font-weight:600; color:var(--ink-soft); padding:8px 14px 8px 0; position:relative;}
+.step-pill .num{width:22px; height:22px; border-radius:50%; border:1.5px solid var(--sand-line); display:flex; align-items:center; justify-content:center; font-family:'JetBrains Mono',monospace; font-size:11px;}
+.step-pill.active{color:var(--ink);}
+.step-pill.active .num{background:var(--ink); border-color:var(--ink); color:#fff;}
+.step-pill.done .num{background:var(--teal); border-color:var(--teal); color:#fff;}
+.co-card{border:1px solid var(--sand-line); border-radius:var(--radius); padding:26px; margin-bottom:20px; background:var(--paper);}
+.co-card h3{font-family:'Fraunces',serif; font-size:19px; margin-bottom:18px;}
+.field-grid2{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+@media(max-width:520px){.field-grid2{grid-template-columns:1fr;}}
+.addr-option, .pm-option{border:1px solid var(--sand-line); border-radius:2px; padding:14px 16px; margin-bottom:10px; display:flex; gap:12px; align-items:flex-start; cursor:pointer;}
+.addr-option.sel, .pm-option.sel{border-color:var(--ink); background:var(--sand);}
+.ship-option{border:1px solid var(--sand-line); border-radius:2px; padding:14px 16px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; cursor:pointer;}
+.ship-option.sel{border-color:var(--ink); background:var(--sand);}
+.order-summary{position:sticky; top:96px; border:1px solid var(--sand-line); border-radius:var(--radius); padding:24px; background:var(--paper);}
+.mini-line{display:flex; gap:12px; padding:10px 0; border-bottom:1px solid var(--sand-line);}
+.mini-line img, .mini-line .cimg{width:52px; height:66px; border-radius:2px; overflow:hidden; background:var(--sand); position:relative;}
+.mini-line .cimg img{width:100%; height:100%; object-fit:cover;}
+.mini-line .mn{font-size:12.5px; font-weight:600;}
+.mini-line .mm{font-size:11px; color:var(--ink-soft);}
+.mini-line .mp{font-family:'JetBrains Mono',monospace; font-size:12px; margin-left:auto; white-space:nowrap;}
+
+.confirm-wrap{text-align:center; padding:100px 20px; max-width:520px; margin:0 auto;}
+.confirm-icon{width:74px; height:74px; border-radius:50%; background:var(--teal); color:#fff; display:flex; align-items:center; justify-content:center; margin:0 auto 26px;}
+.confirm-wrap h1{font-family:'Fraunces',serif; font-size:34px; margin-bottom:12px;}
+.order-num{font-family:'JetBrains Mono',monospace; background:var(--sand); display:inline-block; padding:8px 16px; border-radius:2px; margin:16px 0 30px; font-size:14px;}
+
+.dash-layout{display:grid; grid-template-columns:230px 1fr; gap:40px; padding-top:36px;}
+@media(max-width:860px){.dash-layout{grid-template-columns:1fr;}}
+.dash-nav a{display:flex; align-items:center; gap:10px; padding:11px 14px; border-radius:2px; font-size:13.5px; font-weight:600; color:var(--ink-soft); margin-bottom:2px;}
+.dash-nav a:hover{background:var(--sand);}
+.dash-nav a.active{background:var(--ink); color:#fff;}
+.dash-nav .logout{margin-top:16px; border-top:1px solid var(--sand-line); padding-top:16px;}
+.welcome-card{background:var(--ink); color:var(--paper); border-radius:var(--radius); padding:34px; margin-bottom:30px;}
+.welcome-card h2{font-family:'Fraunces',serif; font-style:italic; font-weight:400; font-size:28px; margin-bottom:6px;}
+.welcome-card p{color:#C9C3B4; font-size:13.5px;}
+.dash-stats{display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:34px;}
+@media(max-width:700px){.dash-stats{grid-template-columns:repeat(2,1fr);}}
+.stat-card{border:1px solid var(--sand-line); border-radius:2px; padding:18px; background:var(--paper);}
+.stat-card .v{font-family:'Fraunces',serif; font-size:26px; margin-bottom:4px;}
+.stat-card .l{font-size:11px; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-soft);}
+.quick-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:10px;}
+@media(max-width:700px){.quick-grid{grid-template-columns:repeat(2,1fr);}}
+.order-row{display:flex; align-items:center; gap:16px; padding:16px; border:1px solid var(--sand-line); border-radius:2px; margin-bottom:10px; cursor:pointer;}
+.order-row:hover{border-color:var(--ink);}
+.order-row .oimgs{display:flex;}
+.order-row .oimgs .cimg{width:44px; height:56px; border-radius:2px; overflow:hidden; margin-left:-14px; border:2px solid var(--paper); background:var(--sand); position:relative;}
+.order-row .oimgs .cimg:first-child{margin-left:0;}
+.status-pill{font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; padding:5px 10px; border-radius:12px;}
+.status-Processing{background:#EFE3C6; color:#7A5A16;}
+.status-Confirmed{background:#DDE7E1; color:var(--teal-dark);}
+.status-Shipped{background:#DCE6F2; color:#2A4E7A;}
+.status-OutforDelivery{background:#F0DDCB; color:var(--brick-dark);}
+.status-Delivered{background:#DCEAE0; color:var(--ok);}
+.status-Cancelled{background:#F1DAD6; color:var(--err);}
+.saved-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:20px;}
+@media(max-width:800px){.saved-grid{grid-template-columns:repeat(2,1fr);}}
+.pm-card{display:flex; justify-content:space-between; align-items:center; border:1px solid var(--sand-line); padding:18px; border-radius:2px; margin-bottom:12px;}
+
+.toast-stack{position:fixed; bottom:24px; left:50%; transform:translateX(-50%); z-index:200; display:flex; flex-direction:column; gap:10px; align-items:center;}
+.toast{background:var(--ink); color:#fff; padding:13px 20px; border-radius:4px; font-size:13.5px; display:flex; align-items:center; gap:14px; box-shadow:var(--shadow-lg); animation:toastIn .2s ease;}
+.toast button{background:none; border:none; color:#fff; text-decoration:underline; font-weight:600; font-size:12.5px;}
+@keyframes toastIn{from{opacity:0; transform:translateY(8px)} to{opacity:1; transform:translateY(0)}}
+
+.ai-fab{position:fixed; bottom:26px; right:26px; z-index:140; width:58px; height:58px; border-radius:50%; background:var(--ink); color:#fff; border:none; display:flex; align-items:center; justify-content:center; box-shadow:var(--shadow-lg); transition:transform .2s;}
+.ai-fab:hover{transform:scale(1.06); background:var(--brick);}
+.ai-panel{position:fixed; bottom:98px; right:26px; z-index:141; width:392px; max-width:92vw; height:min(600px,74vh); background:var(--paper); border-radius:8px; box-shadow:var(--shadow-lg); display:flex; flex-direction:column; overflow:hidden; border:1px solid var(--sand-line);}
+@media(max-width:520px){.ai-panel{right:4vw; bottom:90px; width:92vw; height:78vh;}}
+.ai-head{background:var(--ink); color:#fff; padding:16px 18px; display:flex; justify-content:space-between; align-items:center;}
+.ai-head .t{display:flex; align-items:center; gap:10px; font-weight:600; font-size:14px;}
+.ai-body{flex:1; overflow-y:auto; padding:16px 16px 4px; display:flex; flex-direction:column; gap:14px;}
+.ai-msg{max-width:88%; font-size:13.5px; line-height:1.55; padding:11px 14px; border-radius:12px;}
+.ai-msg.bot{background:var(--sand); align-self:flex-start; border-bottom-left-radius:3px;}
+.ai-msg.user{background:var(--ink); color:#fff; align-self:flex-end; border-bottom-right-radius:3px;}
+.ai-chips{display:flex; flex-wrap:wrap; gap:8px;}
+.ai-chip{border:1px solid var(--sand-line); background:#fff; border-radius:16px; padding:8px 14px; font-size:12px; font-weight:600;}
+.ai-chip:hover{border-color:var(--ink);}
+.ai-prod-strip{display:flex; gap:10px; overflow-x:auto; padding-bottom:4px;}
+.ai-prod-card{min-width:118px; cursor:pointer;}
+.ai-prod-card .m{width:118px; height:148px; background:var(--sand); border-radius:4px; overflow:hidden; margin-bottom:6px;}
+.ai-prod-card .m svg{width:100%; height:100%;}
+.ai-prod-card .m img{width:100%; height:100%; object-fit:cover;}
+.ai-prod-card .n{font-size:11px; font-weight:600; line-height:1.3;}
+.ai-prod-card .p{font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--brick); margin-top:2px;}
+.ai-action-btn{align-self:flex-start; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.03em; padding:9px 16px; border-radius:2px; background:var(--ink); color:#fff; border:none;}
+.ai-action-btn:hover{background:var(--brick);}
+.ai-input-row{display:flex; gap:8px; padding:14px 16px; border-top:1px solid var(--sand-line); background:var(--paper);}
+.ai-input-row input{flex:1; border:1px solid var(--sand-line); border-radius:20px; padding:11px 16px; font-size:13px;}
+.ai-input-row input:focus{outline:none; border-color:var(--ink);}
+.ai-input-row button{width:40px; height:40px; border-radius:50%; background:var(--ink); border:none; color:#fff; display:flex; align-items:center; justify-content:center; flex-shrink:0;}
+.ai-input-row button:disabled{opacity:.4;}
+.typing-dots{display:flex; gap:4px; padding:4px 0;}
+.typing-dots span{width:6px; height:6px; border-radius:50%; background:var(--ink-soft); animation:blink 1.2s infinite ease-in-out;}
+.typing-dots span:nth-child(2){animation-delay:.2s;}
+.typing-dots span:nth-child(3){animation-delay:.4s;}
+@keyframes blink{0%,80%,100%{opacity:.25} 40%{opacity:1}}
+
+.skeleton{background:linear-gradient(90deg,var(--sand) 25%,#EFE9D9 37%,var(--sand) 63%); background-size:400% 100%; animation:sk 1.4s ease infinite; border-radius:2px;}
+@keyframes sk{0%{background-position:100% 50%} 100%{background-position:0 50%}}
+.page-title-band{background:var(--sand); padding:44px 0;}
+.page-title-band h1{font-family:'Fraunces',serif; font-size:clamp(30px,4vw,46px); font-weight:500;}
+.simple-page{max-width:720px; margin:0 auto; padding:50px 0 90px;}
+.simple-page h2{font-family:'Fraunces',serif; font-size:24px; margin:26px 0 10px;}
+.simple-page p{color:var(--ink-soft); font-size:14px; line-height:1.7; margin-bottom:8px;}
+.zoom-scrim{position:fixed; inset:0; background:rgba(21,19,15,0.9); z-index:200; display:flex; align-items:center; justify-content:center; padding:30px;}
+.zoom-scrim svg{max-height:90vh; max-width:90vw;}
+.admin-table{width:100%; border-collapse:collapse; font-size:13px;}
+.admin-table th{text-align:left; padding:10px 12px; border-bottom:1px solid var(--ink); font-size:11px; text-transform:uppercase; letter-spacing:.04em; color:var(--ink-soft); white-space:nowrap;}
+.admin-table td{padding:12px; border-bottom:1px solid var(--sand-line);}
+.table-scroll{overflow-x:auto; -webkit-overflow-scrolling:touch;}
+.table-scroll .admin-table{min-width:560px;}
+.admin-stat-grid{display:grid; grid-template-columns:repeat(6,1fr); gap:12px; margin-bottom:30px;}
+@media(max-width:900px){.admin-stat-grid{grid-template-columns:repeat(3,1fr);}}
+@media(max-width:560px){.admin-stat-grid{grid-template-columns:repeat(2,1fr);}}
+.admin-tabs{display:flex; gap:4px; margin-bottom:22px; border-bottom:1px solid var(--sand-line); flex-wrap:wrap; overflow-x:auto;}
+.admin-tabs button{padding:12px 16px; background:none; border:none; font-size:13px; font-weight:600; color:var(--ink-soft); border-bottom:2px solid transparent; white-space:nowrap;}
+.admin-tabs button.active{color:var(--ink); border-color:var(--brick);}
+
+@media(max-width:900px){
+  .nav-icons .acct-pill, .nav-icons .btn-outline{display:none;}
+}
+@media(max-width:520px){
+  .header-row{gap:10px;}
+  .nav-icons{gap:0;}
+  .logo{font-size:20px;}
+  .hero-inner{padding:56px 18px 46px;}
+  .hero h1{margin-bottom:16px;}
+  .hero p{margin-bottom:24px;}
+  .section{padding:56px 0;}
+  .section-tight{padding:36px 0;}
+  .cat-card{height:280px;}
+  .promo, .newsletter{padding:36px 22px;}
+  .auth-card{padding:30px 22px;}
+  .co-card{padding:18px;}
+  .checkout-grid{gap:30px;}
+  .order-summary{position:static;}
+  .drawer{width:100%; max-width:100%;}
+  .pdp-thumbs{overflow-x:auto; padding-bottom:4px;}
+  .pdp-side h1{font-size:24px;}
+  .welcome-card{padding:24px;}
+  .admin-stat-grid{grid-template-columns:repeat(2,1fr); gap:8px;}
+  .stat-card{padding:14px;}
+  .stat-card .v{font-size:21px;}
+}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel" data-presets="react,env">
+const {useState,useEffect,useMemo,useRef,useCallback} = React;
+
+const ASSISTANT_API_URL = "https://api.routeway.ai/v1/chat/completions";
+const ASSISTANT_API_KEY = "sk-uLNAKIR3AeTtjlndgTMif4LFR0_emTdWbeJ2BuXcOrmo3AYTf0JJnVu_y-4P2t28nTaK4GYj8V38DEeXBUQzmEsVtEzQqg";
+const ASSISTANT_MODEL = "nemotron-3-nano-30b-a3b:free";
+const ASSISTANT_TIMEOUT_MS = 20000;
+
+const BRAND_DEFS = [
+  {id:'nun', name:'Brand 1', color:'#A8431C', desc:'Minimal tailoring inspired by quiet Nile-side mornings — considered fabrics, calm silhouettes.'},
+  {id:'halfway', name:'Brand 2', color:'#1F5C56', desc:'Unisex streetwear built around bold graphics and Cairo\u2019s late-night skyline.'},
+  {id:'souk', name:'Brand 3', color:'#B9873B', desc:'Womenswear rooted in regional textile traditions, reworked for the everyday.'},
+  {id:'bronze', name:'Brand 4', color:'#7E3115', desc:'Heritage menswear workwear — durable cuts, warm tones, honest construction.'},
+  {id:'kite', name:'Brand 5', color:'#3A362F', desc:'Technical unisex outerwear designed for the desert-to-city commute.'},
+  {id:'marrow', name:'Brand 6', color:'#5B6B3F', desc:'A knitwear specialist working in small batches with regional wool and cotton.'},
+];
+const SIZES_TOP = ['XS','S','M','L','XL'];
+const SIZES_BOTTOM = ['28','30','32','34','36'];
+const SIZES_ONE = ['One Size'];
+const COLOR_SETS = {
+  neutral:[{name:'Ecru',hex:'#EDE6D6'},{name:'Ink',hex:'#211E1A'},{name:'Clay',hex:'#A8431C'}],
+  earth:[{name:'Olive',hex:'#5B6B3F'},{name:'Sand',hex:'#C9B78C'},{name:'Ink',hex:'#211E1A'}],
+  cool:[{name:'Teal',hex:'#1F5C56'},{name:'Stone',hex:'#9AA093'},{name:'Ecru',hex:'#EDE6D6'}],
+  mono:[{name:'Black',hex:'#171512'},{name:'White',hex:'#F7F4EC'}],
+  rust:[{name:'Rust',hex:'#A8431C'},{name:'Bone',hex:'#EDE6D6'},{name:'Bronze',hex:'#7E3115'}],
+};
+const DESCS = {
+  'Shirts':'A structured shirt cut from breathable woven cotton, finished with mother-of-pearl buttons and a relaxed collar stand.',
+  'T-Shirts':'Heavyweight combed cotton jersey with a boxy, dropped shoulder and a garment-washed finish for a broken-in feel from day one.',
+  'Pants':'Straight-leg trousers with a mid-rise waist, side seam pockets and a soft drape that moves with you.',
+  'Jeans':'Rigid selvedge denim, tapered through the leg, finished with tonal stitching and a hand-brushed hem.',
+  'Shorts':'A tailored short in a lightweight twill, with a fixed waistband and deep side pockets for warm-weather days.',
+  'Sweatshirts':'Brushed-back fleece with a dropped hem and ribbed cuffs, made for layering through cooler evenings.',
+  'Hoodies':'An oversized hoodie in mid-weight loopback cotton with a lined hood and kangaroo pocket.',
+  'Jackets':'A lightweight shell jacket with a stand collar and articulated sleeves for everyday wear.',
+  'Outerwear':'A weather-resistant coat built for transitional seasons, with a quilted lining and storm flap.',
+  'Knitwear':'Fully-fashioned knit in a regional cotton-wool blend, ribbed at the cuff and hem for shape retention.',
+  'Accessories':'A finishing piece cut from the same considered materials as the rest of the collection.',
+  'Dresses':'A fluid midi dress with a wrap silhouette and adjustable tie waist, cut from a lightweight woven blend.',
+  'Skirts':'An A-line skirt with a hidden side zip and soft box pleats that hold their shape through the day.',
+};
+function desc(cat){ return DESCS[cat] || 'A considered piece made in small batches with regional materials.'; }
+
+let _pid = 1;
+function P(brandId, gender, category, name, price, discount, colorSet, sizes, stock, tags){
+  const b = BRAND_DEFS.find(x=>x.id===brandId);
+  return {
+    id:'p'+(_pid++), brand:b.name, brandId, gender, category, name,
+    price, discount:discount||0, colors:COLOR_SETS[colorSet], sizes, stock,
+    tags:tags||[], desc:desc(category), image:null
+  };
+}
+function catalogAdd(product){ PRODUCTS.push(product); }
+function catalogUpdate(id, fields){
+  const idx = PRODUCTS.findIndex(p=>p.id===id);
+  if(idx>-1) PRODUCTS[idx] = {...PRODUCTS[idx], ...fields};
+}
+function catalogRemove(id){
+  const idx = PRODUCTS.findIndex(p=>p.id===id);
+  if(idx>-1) PRODUCTS.splice(idx,1);
+}
+function catalogBumpPid(products){
+  let maxN = 0;
+  products.forEach(p=>{ const m=/^p(\d+)$/.exec(p.id); if(m) maxN = Math.max(maxN, parseInt(m[1],10)); });
+  if(_pid <= maxN) _pid = maxN+1;
+}
+
+function slugify(name){
+  const base = String(name||'').toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'') || 'brand';
+  let id = base, n = 1;
+  while(BRAND_DEFS.some(b=>b.id===id)){ id = base+'-'+(++n); }
+  return id;
+}
+function brandAdd(brand){ BRAND_DEFS.push(brand); }
+function brandUpdate(id, fields){
+  const idx = BRAND_DEFS.findIndex(b=>b.id===id);
+  if(idx>-1){
+    const prevName = BRAND_DEFS[idx].name;
+    BRAND_DEFS[idx] = {...BRAND_DEFS[idx], ...fields};
+    if(fields.name && fields.name!==prevName){
+      PRODUCTS.forEach(p=>{ if(p.brandId===id) p.brand = fields.name; });
+    }
+  }
+}
+function brandRemove(id){
+  const idx = BRAND_DEFS.findIndex(b=>b.id===id);
+  if(idx>-1) BRAND_DEFS.splice(idx,1);
+}
+
+const PRODUCTS = [
+  P('nun','women','Shirts','Product 1',890,0,'neutral',SIZES_TOP,14,['new']),
+  P('nun','women','Dresses','Product 2',1450,10,'neutral',['XS','S','M','L'],9,['new','trending']),
+  P('nun','unisex','T-Shirts','Product 3',420,0,'mono',SIZES_TOP,30,[]),
+  P('nun','women','Pants','Product 4',1120,0,'neutral',SIZES_BOTTOM,11,[]),
+  P('nun','women','Knitwear','Product 5',760,0,'neutral',SIZES_TOP,7,['sale']),
+  P('nun','unisex','Accessories','Product 6',540,0,'earth',SIZES_ONE,20,[]),
+  P('nun','women','Skirts','Product 7',980,0,'mono',['XS','S','M','L'],6,[]),
+
+  P('halfway','unisex','Hoodies','Product 8',1050,0,'cool',SIZES_TOP,22,['new','trending']),
+  P('halfway','unisex','T-Shirts','Product 9',480,0,'mono',SIZES_TOP,40,['trending']),
+  P('halfway','men','Jackets','Product 10',1380,15,'cool',SIZES_TOP,10,['sale']),
+  P('halfway','unisex','Sweatshirts','Product 11',760,0,'earth',SIZES_TOP,18,[]),
+  P('halfway','unisex','Shorts','Product 12',690,0,'earth',SIZES_BOTTOM,16,[]),
+  P('halfway','men','Pants','Product 13',820,0,'mono',SIZES_BOTTOM,13,[]),
+  P('halfway','unisex','Accessories','Product 14',350,0,'mono',SIZES_ONE,25,['new']),
+
+  P('souk','women','Dresses','Product 15',1980,0,'rust',['XS','S','M','L'],5,['new']),
+  P('souk','women','Shirts','Product 16',1050,0,'rust',SIZES_TOP,9,[]),
+  P('souk','women','Skirts','Product 17',1420,20,'rust',['XS','S','M'],4,['sale']),
+  P('souk','women','Knitwear','Product 18',1680,0,'earth',SIZES_TOP,6,['trending']),
+  P('souk','women','Accessories','Product 19',480,0,'rust',SIZES_ONE,30,[]),
+  P('souk','women','T-Shirts','Product 20',520,0,'neutral',SIZES_TOP,17,[]),
+  P('souk','women','Pants','Product 21',1290,0,'rust',SIZES_BOTTOM,8,[]),
+
+  P('bronze','men','Jackets','Product 22',1750,0,'rust',SIZES_TOP,8,['new']),
+  P('bronze','men','Shirts','Product 23',920,0,'earth',SIZES_TOP,15,[]),
+  P('bronze','men','Jeans','Product 24',1580,0,'mono',SIZES_BOTTOM,12,['trending']),
+  P('bronze','men','Outerwear','Product 25',2650,0,'rust',SIZES_TOP,4,['new']),
+  P('bronze','men','Knitwear','Product 26',1340,10,'earth',SIZES_TOP,9,['sale']),
+  P('bronze','men','Accessories','Product 27',480,0,'rust',SIZES_ONE,22,[]),
+  P('bronze','men','T-Shirts','Product 28',390,0,'mono',SIZES_TOP,35,[]),
+
+  P('kite','unisex','Outerwear','Product 29',2200,0,'earth',SIZES_TOP,7,['new','trending']),
+  P('kite','unisex','Jackets','Product 30',1180,0,'mono',SIZES_TOP,14,[]),
+  P('kite','unisex','Pants','Product 31',980,0,'earth',SIZES_BOTTOM,16,[]),
+  P('kite','unisex','Hoodies','Product 32',890,0,'cool',SIZES_TOP,19,[]),
+  P('kite','unisex','Accessories','Product 33',620,0,'mono',SIZES_ONE,20,[]),
+  P('kite','unisex','Shorts','Product 34',560,0,'earth',SIZES_BOTTOM,18,['sale'],),
+  P('kite','unisex','Jackets','Product 35',1420,0,'cool',SIZES_TOP,6,[]),
+
+  P('marrow','unisex','Knitwear','Product 36',1180,0,'earth',SIZES_TOP,10,['new']),
+  P('marrow','women','Knitwear','Product 37',1080,0,'neutral',SIZES_TOP,8,['trending']),
+  P('marrow','men','Knitwear','Product 38',1290,0,'cool',SIZES_TOP,9,[]),
+  P('marrow','unisex','Accessories','Product 39',320,0,'mono',SIZES_ONE,28,[]),
+  P('marrow','women','Sweatshirts','Product 40',940,15,'neutral',SIZES_TOP,7,['sale']),
+  P('marrow','unisex','T-Shirts','Product 41',680,0,'neutral',SIZES_TOP,12,[]),
+  P('marrow','men','Jackets','Product 42',1120,0,'earth',SIZES_TOP,9,['new']),
+];
+
+const CATEGORIES = {
+  men:['Shirts','T-Shirts','Pants','Jeans','Shorts','Sweatshirts','Hoodies','Jackets','Outerwear','Knitwear','Accessories'],
+  women:['Shirts','T-Shirts','Pants','Jeans','Shorts','Sweatshirts','Hoodies','Jackets','Outerwear','Knitwear','Dresses','Skirts','Accessories'],
+  unisex:['T-Shirts','Shirts','Pants','Jeans','Shorts','Hoodies','Sweatshirts','Jackets','Outerwear','Accessories'],
+};
+
+function fmt(n){ return n.toLocaleString('en-US') + ' EGP'; }
+function finalPrice(p){ return p.discount ? Math.round(p.price*(1-p.discount/100)) : p.price; }
+function brandOf(p){ return BRAND_DEFS.find(b=>b.name===p.brand); }
+
+function GarmentArt({category, image, big}){
+  if(image){
+    return <img src={image} alt={category} loading="lazy" style={{width:'100%', height:'100%', objectFit:'cover', display:'block'}}/>;
+  }
+  return (
+    <div style={{width:'100%', height:'100%', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:8, background:'var(--sand)', color:'var(--ink-soft)'}}>
+      <Icon.bag width={big?34:22} height={big?34:22}/>
+      <span className="mono" style={{fontSize:big?11:9.5, letterSpacing:'.04em', textTransform:'uppercase'}}>{category}</span>
+    </div>
+  );
+}
+function BrandCoverArt({brand}){
+  if(brand.image){
+    return (
+      <React.Fragment>
+        <img src={brand.image} alt={brand.name} style={{position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover'}}/>
+        <div style={{position:'absolute', inset:0, background:'linear-gradient(180deg, transparent 40%, rgba(21,19,15,0.55) 100%)'}}/>
+        <span style={{position:'absolute', left:20, bottom:16, color:'#fff', fontFamily:'Fraunces, serif', fontSize:26, fontStyle:'italic'}}>{brand.name}</span>
+      </React.Fragment>
+    );
+  }
+  return (
+    <div style={{position:'absolute', inset:0, background:brand.color, display:'flex', alignItems:'flex-end'}}>
+      <span style={{padding:'0 0 16px 20px', color:'#fff', fontFamily:'Fraunces, serif', fontSize:26, fontStyle:'italic'}}>{brand.name}</span>
+    </div>
+  );
+}
+function HeroArt(){
+  return (
+    <svg viewBox="0 0 420 420">
+      <circle cx="210" cy="210" r="200" fill="none" stroke="#B9873B" strokeWidth="0.6" opacity="0.5"/>
+      <circle cx="210" cy="210" r="150" fill="none" stroke="#B9873B" strokeWidth="0.6" opacity="0.35"/>
+      <circle cx="210" cy="210" r="95" fill="none" stroke="#B9873B" strokeWidth="0.6" opacity="0.25"/>
+      {BRAND_DEFS.map((b,i)=>{
+        const angle = (i/BRAND_DEFS.length)*Math.PI*2 - Math.PI/2;
+        const cx = 210 + Math.cos(angle)*150, cy = 210 + Math.sin(angle)*150;
+        return (
+          <g key={b.id}>
+            <circle cx={cx} cy={cy} r="26" fill={b.color} opacity="0.9"/>
+            <circle cx={cx} cy={cy} r="34" fill="none" stroke="#F6F2E9" strokeWidth="0.7" opacity="0.5"/>
+          </g>
+        );
+      })}
+      <circle cx="210" cy="210" r="40" fill="#B9873B"/>
+      <text x="210" y="216" textAnchor="middle" fill="#15130F" fontFamily="Fraunces, serif" fontSize="22" fontStyle="italic">M3</text>
+    </svg>
+  );
+}
+
+const Icon = {
+  search:(p)=><svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.2" y2="16.2"/></svg>,
+  heart:(p)=><svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 21s-7.5-4.6-10-9.3C.5 8 2 4 6 4c2.2 0 3.8 1.2 6 4 2.2-2.8 3.8-4 6-4 4 0 5.5 4 4 7.7C19.5 16.4 12 21 12 21z"/></svg>,
+  bag:(p)=><svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M6 8h12l-1 12H7L6 8z"/><path d="M9 8V6a3 3 0 016 0v2"/></svg>,
+  user:(p)=><svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 20c1.5-4 5-6 8-6s6.5 2 8 6"/></svg>,
+  menu:(p)=><svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>,
+  close:(p)=><svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg>,
+  arrow:(p)=><svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg>,
+  chevDown:(p)=><svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><polyline points="6 9 12 15 18 9"/></svg>,
+  check:(p)=><svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>,
+  spark:(p)=><svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3z"/></svg>,
+  send:(p)=><svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>,
+  trash:(p)=><svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"><polyline points="3 6 5 6 21 6"/><path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>,
+  minus:(p)=><svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="5" y1="12" x2="19" y2="12"/></svg>,
+  plus:(p)=><svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>,
+  truck:(p)=><svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"><rect x="1" y="7" width="14" height="10"/><path d="M15 10h4l3 3v4h-7z"/><circle cx="6" cy="19" r="1.6"/><circle cx="17.5" cy="19" r="1.6"/></svg>,
+};
+
+const STORAGE_KEY = 'm3rafsh-app-state-v1';
+async function loadState(){
+  try{
+    const r = await window.storage.get(STORAGE_KEY, false);
+    return r ? JSON.parse(r.value) : null;
+  }catch(e){ return null; }
+}
+async function saveState(state){
+  try{ await window.storage.set(STORAGE_KEY, JSON.stringify(state), false); }
+  catch(e){ }
+}
+
+const SEED_ACCOUNTS = [
+  {id:'u1', name:'Nourhan Adel', email:'nourhan.adel@example.com', phone:'+20 100 123 4567', status:'active', joined:'2026-02-11'},
+  {id:'u2', name:'Youssef Kamal', email:'youssef.kamal@example.com', phone:'+20 111 987 6543', status:'active', joined:'2026-03-02'},
+  {id:'u3', name:'Salma Reda', email:'salma.reda@example.com', phone:'+20 122 456 7891', status:'banned', joined:'2026-01-20'},
+];
+
+function App(){
+  const [route, setRoute] = useState({page:'home', params:{}});
+  const [history, setHistory] = useState([]);
+  const [cart, setCart] = useState([]);
+  const [wishlist, setWishlist] = useState([]);
+  const [user, setUser] = useState(null);
+  const [addresses, setAddresses] = useState([]);
+  const [paymentMethods, setPaymentMethods] = useState([]);
+  const [orders, setOrders] = useState([]);
+  const [recentlyViewed, setRecentlyViewed] = useState([]);
+  const [cartOpen, setCartOpen] = useState(false);
+  const [authOpen, setAuthOpen] = useState(false);
+  const [authMode, setAuthMode] = useState('login');
+  const [authIntent, setAuthIntent] = useState(null);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [toasts, setToasts] = useState([]);
+  const [aiOpen, setAiOpen] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+  const [accounts, setAccounts] = useState(SEED_ACCOUNTS);
+  const [adminAuthed, setAdminAuthed] = useState(false);
+  const [catalogVersion, setCatalogVersion] = useState(0);
+  const [productAdds, setProductAdds] = useState([]);
+  const [productEdits, setProductEdits] = useState({});
+  const [productDeletes, setProductDeletes] = useState([]);
+  const [brandAdds, setBrandAdds] = useState([]);
+  const [brandEdits, setBrandEdits] = useState({});
+  const [brandDeletes, setBrandDeletes] = useState([]);
+
+  useEffect(()=>{
+    (async ()=>{
+      const s = await loadState();
+      if(s){
+        setCart(s.cart||[]);
+        setWishlist(s.wishlist||[]);
+        setUser(s.user||null);
+        setAddresses(s.addresses||[]);
+        setPaymentMethods(s.paymentMethods||[]);
+        setOrders(s.orders||[]);
+        setRecentlyViewed(s.recentlyViewed||[]);
+        setAccounts(s.accounts && s.accounts.length ? s.accounts : SEED_ACCOUNTS);
+
+        const bAdds = s.brandAdds || [];
+        const bEdits = s.brandEdits || {};
+        const bDels = s.brandDeletes || [];
+        bAdds.forEach(brandAdd);
+        Object.keys(bEdits).forEach(id=>brandUpdate(id, bEdits[id]));
+        bDels.forEach(brandRemove);
+        setBrandAdds(bAdds);
+        setBrandEdits(bEdits);
+        setBrandDeletes(bDels);
+
+        const adds = s.productAdds || [];
+        const edits = s.productEdits || {};
+        const dels = s.productDeletes || [];
+        adds.forEach(catalogAdd);
+        Object.keys(edits).forEach(id=>catalogUpdate(id, edits[id]));
+        dels.forEach(catalogRemove);
+        catalogBumpPid(PRODUCTS);
+        setProductAdds(adds);
+        setProductEdits(edits);
+        setProductDeletes(dels);
+        setCatalogVersion(v=>v+1);
+      }
+      setLoaded(true);
+    })();
+  },[]);
+  useEffect(()=>{
+    if(!loaded) return;
+    saveState({cart,wishlist,user,addresses,paymentMethods,orders,recentlyViewed,accounts,productAdds,productEdits,productDeletes,brandAdds,brandEdits,brandDeletes});
+  },[cart,wishlist,user,addresses,paymentMethods,orders,recentlyViewed,accounts,productAdds,productEdits,productDeletes,brandAdds,brandEdits,brandDeletes,loaded]);
+
+  useEffect(()=>{
+    if(!user) return;
+    const acc = accounts.find(a=>a.email.toLowerCase()===user.email.toLowerCase());
+    if(acc && acc.status==='banned'){
+      setUser(null);
+      pushToast('Your account has been suspended. Contact support for help.');
+      goTo('home');
+    }
+  },[accounts]);
+
+  function pushToast(msg, actionLabel, actionFn){
+    const id = Date.now()+Math.random();
+    setToasts(t=>[...t,{id,msg,actionLabel,actionFn}]);
+    setTimeout(()=> setToasts(t=>t.filter(x=>x.id!==id)), 3600);
+  }
+
+  function goTo(page, params){
+    params = params || {};
+    setHistory(h=>[...h, route]);
+    setRoute({page, params});
+    setMobileNavOpen(false);
+    window.scrollTo({top:0, behavior:'instant' in window ? 'instant':'auto'});
+  }
+  function goBack(){
+    setHistory(h=>{
+      if(h.length===0){ setRoute({page:'home',params:{}}); return h; }
+      const prev = h[h.length-1];
+      setRoute(prev);
+      return h.slice(0,-1);
+    });
+  }
+
+  function requireAuth(nextPage, nextParams){
+    setAuthIntent({page:nextPage, params:nextParams||{}});
+    setAuthMode('login');
+    setAuthOpen(true);
+  }
+
+  function addToCart(product, size, color, qty){
+    setCart(c=>{
+      const idx = c.findIndex(l=>l.productId===product.id && l.size===size && l.color===color);
+      if(idx>-1){ const copy=[...c]; copy[idx]={...copy[idx], qty:copy[idx].qty+qty}; return copy; }
+      return [...c, {productId:product.id, size, color, qty, savedForLater:false}];
+    });
+    pushToast('✓ Added to cart', 'View cart', ()=>setCartOpen(true));
+  }
+  function updateCartQty(idx, qty){
+    setCart(c=>{ const copy=[...c]; if(qty<=0){ copy.splice(idx,1);} else { copy[idx]={...copy[idx],qty}; } return copy; });
+  }
+  function removeCartLine(idx){ setCart(c=>c.filter((_,i)=>i!==idx)); }
+  function toggleSaveForLater(idx){ setCart(c=>{const copy=[...c]; copy[idx]={...copy[idx], savedForLater:!copy[idx].savedForLater}; return copy;}); }
+
+  function toggleWishlist(productId){
+    setWishlist(w=>{
+      if(w.includes(productId)){ pushToast('Removed from saved items'); return w.filter(id=>id!==productId); }
+      pushToast('Saved to your wishlist'); return [...w, productId];
+    });
+  }
+
+  const cartActiveLines = cart.filter(l=>!l.savedForLater);
+  const cartCount = cartActiveLines.reduce((s,l)=>s+l.qty,0);
+
+  function handleCheckoutClick(){
+    if(cartActiveLines.length===0){ pushToast('Your cart is empty'); return; }
+    if(!user){ setCartOpen(false); requireAuth('checkout'); return; }
+    setCartOpen(false);
+    goTo('checkout');
+  }
+
+  function handleAuthSuccess(u){
+    const existing = accounts.find(a=>a.email.toLowerCase()===u.email.toLowerCase());
+    if(existing && existing.status==='banned'){
+      pushToast('This account has been suspended. Contact support for help.');
+      return;
+    }
+    if(!existing){
+      setAccounts(a=>[...a, {id:'u'+Date.now(), name:u.name, email:u.email, phone:u.phone||'', status:'active', joined:new Date().toISOString().slice(0,10)}]);
+    }
+    setUser(u);
+    setAuthOpen(false);
+    pushToast('Welcome, '+u.name.split(' ')[0]+'!');
+    if(authIntent){ goTo(authIntent.page, authIntent.params); setAuthIntent(null); }
+  }
+  function handleLogout(){
+    setUser(null);
+    pushToast('Logged out');
+    goTo('home');
+  }
+
+  function placeOrder(details){
+    const items = cartActiveLines.map(l=>{
+      const p = PRODUCTS.find(x=>x.id===l.productId);
+      return {productId:p.id, name:p.name, brand:p.brand, category:p.category, size:l.size, color:l.color, qty:l.qty, price:finalPrice(p)};
+    });
+    const subtotal = items.reduce((s,i)=>s+i.price*i.qty,0);
+    const shipping = details.shippingCost || 0;
+    const order = {
+      id: 'M3-'+Math.floor(10000+Math.random()*89999),
+      date: new Date().toISOString(),
+      items, subtotal, shipping, total: subtotal+shipping,
+      address: details.address, payment: details.payment, deliveryMethod: details.deliveryMethod,
+      status:'Processing', customerEmail: user?.email || '', customerName: user?.name || '',
+    };
+    setOrders(o=>[order, ...o]);
+    setCart(c=>c.filter(l=>l.savedForLater));
+    return order;
+  }
+
+  function updateOrderStatus(orderId, status, reason){
+    setOrders(os => os.map(o => o.id===orderId ? {
+      ...o, status,
+      cancelReason: status==='Cancelled' ? (reason ?? o.cancelReason ?? '') : o.cancelReason,
+    } : o));
+    pushToast(status==='Cancelled' ? 'Order cancelled' : 'Order status updated to '+status);
+  }
+
+  function recordView(productId){
+    setRecentlyViewed(rv=>{
+      const filtered = rv.filter(id=>id!==productId);
+      return [productId, ...filtered].slice(0,8);
+    });
+  }
+
+  function handleAdminLogin(username, password){
+    if(username==='admin' && password==='12345'){
+      setAdminAuthed(true);
+      pushToast('Welcome back, admin');
+      return true;
+    }
+    pushToast('Invalid admin credentials');
+    return false;
+  }
+  function handleAdminLogout(){
+    setAdminAuthed(false);
+    pushToast('Admin logged out');
+    goTo('home');
+  }
+
+  function adminAddProduct(fields){
+    const product = {id:'p'+(_pid++), image:null, tags:[], discount:0, ...fields};
+    catalogAdd(product);
+    setProductAdds(a=>[...a, product]);
+    setCatalogVersion(v=>v+1);
+    pushToast('Product added');
+  }
+  function adminUpdateProduct(id, fields){
+    catalogUpdate(id, fields);
+    setProductEdits(e=>({...e, [id]:{...(e[id]||{}), ...fields}}));
+    setCatalogVersion(v=>v+1);
+    pushToast('Product updated');
+  }
+  function adminDeleteProduct(id){
+    catalogRemove(id);
+    setProductAdds(a=>a.filter(p=>p.id!==id));
+    setProductEdits(e=>{ const c={...e}; delete c[id]; return c; });
+    setProductDeletes(d=>[...d, id]);
+    setCatalogVersion(v=>v+1);
+    pushToast('Product removed');
+  }
+
+  function adminAddBrand(fields){
+    const id = slugify(fields.name);
+    const brand = {color:'#3A362F', desc:'', image:null, ...fields, id};
+    brandAdd(brand);
+    setBrandAdds(a=>[...a, brand]);
+    setCatalogVersion(v=>v+1);
+    pushToast('Brand added');
+  }
+  function adminUpdateBrand(id, fields){
+    brandUpdate(id, fields);
+    setBrandEdits(e=>({...e, [id]:{...(e[id]||{}), ...fields}}));
+    setCatalogVersion(v=>v+1);
+    pushToast('Brand updated');
+  }
+  function adminDeleteBrand(id){
+    const orphaned = PRODUCTS.filter(p=>p.brandId===id).map(p=>p.id);
+    orphaned.forEach(catalogRemove);
+    brandRemove(id);
+    setProductAdds(a=>a.filter(p=>!orphaned.includes(p.id)));
+    setProductEdits(e=>{ const c={...e}; orphaned.forEach(pid=>delete c[pid]); return c; });
+    setProductDeletes(d=>[...d, ...orphaned]);
+    setBrandAdds(a=>a.filter(b=>b.id!==id));
+    setBrandEdits(e=>{ const c={...e}; delete c[id]; return c; });
+    setBrandDeletes(d=>[...d, id]);
+    setCatalogVersion(v=>v+1);
+    pushToast('Brand removed');
+  }
+
+  function adminUpdateAccount(id, fields){
+    setAccounts(a=>a.map(x=>x.id===id ? {...x, ...fields} : x));
+    pushToast('Account updated');
+  }
+  function adminToggleBan(id){
+    setAccounts(a=>a.map(x=>x.id===id ? {...x, status: x.status==='banned' ? 'active' : 'banned'} : x));
+  }
+  function adminDeleteAccount(id){
+    setAccounts(a=>a.filter(x=>x.id!==id));
+    pushToast('Account deleted');
+  }
+
+  const ctx = {
+    route, goTo, goBack, cart, cartActiveLines, cartCount, wishlist, user, addresses, setAddresses,
+    paymentMethods, setPaymentMethods, orders, recentlyViewed, cartOpen, setCartOpen, authOpen, setAuthOpen,
+    authMode, setAuthMode, mobileNavOpen, setMobileNavOpen, addToCart, updateCartQty, removeCartLine,
+    toggleSaveForLater, toggleWishlist, handleCheckoutClick, requireAuth, handleAuthSuccess, handleLogout,
+    placeOrder, updateOrderStatus, recordView, pushToast, aiOpen, setAiOpen, catalogVersion,
+    adminAuthed, handleAdminLogin, handleAdminLogout,
+    adminAddProduct, adminUpdateProduct, adminDeleteProduct,
+    adminAddBrand, adminUpdateBrand, adminDeleteBrand,
+    accounts, adminUpdateAccount, adminToggleBan, adminDeleteAccount,
+  };
+
+  return (
+    <div>
+      <Header ctx={ctx}/>
+      <MobileDrawer ctx={ctx}/>
+      <main>
+        <Page ctx={ctx}/>
+      </main>
+      <Footer ctx={ctx}/>
+      {ctx.cartOpen && <CartDrawer ctx={ctx}/>}
+      {ctx.authOpen && <AuthModal ctx={ctx}/>}
+      <ToastStack toasts={toasts}/>
+      <AiAssistant ctx={ctx}/>
+    </div>
+  );
+}
+
+function Header({ctx}){
+  const {route, goTo, cartCount, wishlist, user, setCartOpen, setAuthOpen, setAuthMode, setMobileNavOpen} = ctx;
+  const navItems = [
+    {label:'Shop', page:'shop', params:{}},
+    {label:'Men', page:'category', params:{gender:'men'}},
+    {label:'Women', page:'category', params:{gender:'women'}},
+    {label:'Unisex', page:'category', params:{gender:'unisex'}},
+    {label:'Brands', page:'brands', params:{}},
+    {label:'New Arrivals', page:'shop', params:{tag:'new'}},
+    {label:'Sale', page:'shop', params:{tag:'sale'}},
+  ];
+  return (
+    <header className="site-header">
+      <div className="wrap header-row">
+        <button className="hamburger" onClick={()=>setMobileNavOpen(true)} aria-label="Open menu"><Icon.menu width="22" height="22"/></button>
+        <a className="logo" onClick={()=>goTo('home')} href="#">M<b>3</b>RAFSH</a>
+        <nav className="nav-main">
+          {navItems.map(n=>(
+            <a key={n.label} href="#" className={route.page===n.page && (!n.params.gender || n.params.gender===route.params.gender) ? 'active':''}
+               onClick={(e)=>{e.preventDefault(); goTo(n.page,n.params);}}>{n.label}</a>
+          ))}
+        </nav>
+        <div className="nav-icons">
+          <button className="icon-btn" onClick={()=>goTo('shop',{focusSearch:true})} aria-label="Search"><Icon.search width="19" height="19"/></button>
+          <button className="icon-btn" onClick={()=>goTo(user?'dashboard-saved':'dashboard-saved')} aria-label="Wishlist">
+            <Icon.heart width="19" height="19"/>
+            {wishlist.length>0 && <span className="badge">{wishlist.length}</span>}
+          </button>
+          <button className="icon-btn" onClick={()=>setCartOpen(true)} aria-label="Cart">
+            <Icon.bag width="19" height="19"/>
+            {cartCount>0 && <span className="badge">{cartCount}</span>}
+          </button>
+          {user ? (
+            <button className="acct-pill" onClick={()=>goTo('dashboard')}>
+              <span className="avatar">{user.name.split(' ').map(w=>w[0]).slice(0,2).join('')}</span>
+              {user.name.split(' ')[0]}
+            </button>
+          ) : (
+            <button className="btn btn-outline btn-sm" onClick={()=>{setAuthMode('login'); setAuthOpen(true);}}>Login / Sign Up</button>
+          )}
+        </div>
+      </div>
+    </header>
+  );
+}
+
+function MobileDrawer({ctx}){
+  const {mobileNavOpen, setMobileNavOpen, goTo, user} = ctx;
+  if(!mobileNavOpen) return null;
+  const items = [
+    ['Shop','shop',{}],['Men','category',{gender:'men'}],['Women','category',{gender:'women'}],
+    ['Unisex','category',{gender:'unisex'}],['Brands','brands',{}],['New Arrivals','shop',{tag:'new'}],['Sale','shop',{tag:'sale'}],
+    user? ['My Account','dashboard',{}] : ['Login / Sign Up','__auth',{}],
+  ];
+  return (
+    <div className="mobile-drawer">
+      <div className="scrim" onClick={()=>setMobileNavOpen(false)}/>
+      <div className="panel">
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:20}}>
+          <span className="logo" style={{fontSize:20}}>M<b>3</b>RAFSH</span>
+          <button className="icon-btn" onClick={()=>setMobileNavOpen(false)}><Icon.close width="20" height="20"/></button>
+        </div>
+        {items.map(([label,page,params])=>(
+          <a key={label} href="#" onClick={(e)=>{e.preventDefault(); if(page==='__auth'){ ctx.setAuthOpen(true); setMobileNavOpen(false);} else goTo(page,params);}}>{label}</a>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function Footer({ctx}){
+  const {goTo} = ctx;
+  return (
+    <footer className="site-footer">
+      <div className="wrap">
+        <div className="foot-grid">
+          <div>
+            <span className="logo" style={{color:'#fff', fontSize:22}}>M<b style={{color:'#B9873B'}}>3</b>RAFSH</span>
+            <p style={{marginTop:14, fontSize:13, lineHeight:1.7, maxWidth:280}}>A marketplace for independent local fashion labels — considered clothing, made close to home.</p>
+          </div>
+          <div>
+            <h4>Shop</h4>
+            <a href="#" onClick={e=>{e.preventDefault(); goTo('category',{gender:'men'});}}>Men</a>
+            <a href="#" onClick={e=>{e.preventDefault(); goTo('category',{gender:'women'});}}>Women</a>
+            <a href="#" onClick={e=>{e.preventDefault(); goTo('category',{gender:'unisex'});}}>Unisex</a>
+            <a href="#" onClick={e=>{e.preventDefault(); goTo('brands',{});}}>Brands</a>
+          </div>
+          <div>
+            <h4>Help</h4>
+            <a href="#" onClick={e=>{e.preventDefault(); goTo('info',{topic:'shipping'});}}>Shipping</a>
+            <a href="#" onClick={e=>{e.preventDefault(); goTo('info',{topic:'returns'});}}>Returns</a>
+            <a href="#" onClick={e=>{e.preventDefault(); goTo('info',{topic:'sizing'});}}>Size Guide</a>
+            <a href="#" onClick={e=>{e.preventDefault(); goTo('info',{topic:'contact'});}}>Contact</a>
+          </div>
+          <div>
+            <h4>Company</h4>
+            <a href="#" onClick={e=>{e.preventDefault(); goTo('brands',{});}}>Our Brands</a>
+            <a href="#" onClick={e=>{e.preventDefault(); goTo('info',{topic:'about'});}}>About</a>
+            <a href="#" onClick={e=>{e.preventDefault(); goTo('admin',{});}}>Admin Dashboard</a>
+          </div>
+        </div>
+        <div className="foot-bottom">
+          <span>© 2026 M3RAFSH Marketplace. All rights reserved.</span>
+          <span>Shipping across Egypt · Cairo, Alexandria &amp; Giza same-week delivery</span>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+function Page({ctx}){
+  const {route} = ctx;
+  switch(route.page){
+    case 'home': return <Home ctx={ctx}/>;
+    case 'shop': return <Shop ctx={ctx}/>;
+    case 'category': return <Shop ctx={ctx}/>;
+    case 'brands': return <Brands ctx={ctx}/>;
+    case 'brand': return <BrandStorefront ctx={ctx}/>;
+    case 'product': return <ProductPage ctx={ctx}/>;
+    case 'checkout': return <Checkout ctx={ctx}/>;
+    case 'confirmation': return <Confirmation ctx={ctx}/>;
+    case 'dashboard': return <Dashboard ctx={ctx} tab="home"/>;
+    case 'dashboard-orders': return <Dashboard ctx={ctx} tab="orders"/>;
+    case 'dashboard-order-detail': return <Dashboard ctx={ctx} tab="order-detail"/>;
+    case 'dashboard-saved': return <Dashboard ctx={ctx} tab="saved"/>;
+    case 'dashboard-addresses': return <Dashboard ctx={ctx} tab="addresses"/>;
+    case 'dashboard-payments': return <Dashboard ctx={ctx} tab="payments"/>;
+    case 'dashboard-settings': return <Dashboard ctx={ctx} tab="settings"/>;
+    case 'info': return <InfoPage ctx={ctx}/>;
+    case 'admin': return <AdminDashboard ctx={ctx}/>;
+    default: return <Home ctx={ctx}/>;
+  }
+}
+
+function Home({ctx}){
+  const {goTo} = ctx;
+  const newArrivals = PRODUCTS.filter(p=>p.tags.includes('new')).slice(0,8);
+  const trending = PRODUCTS.filter(p=>p.tags.includes('trending')).concat(PRODUCTS.slice(0,4)).slice(0,8);
+  return (
+    <div>
+      <section className="hero">
+        <div className="hero-inner">
+          <div>
+            <div className="eyebrow hero-eyebrow">Six local labels, one wardrobe</div>
+            <h1>Discover<br/><b>local fashion</b></h1>
+            <p>Independent clothing brands from your city, curated on one platform — considered materials, honest pricing, made close to home.</p>
+            <div className="hero-ctas">
+              <button className="btn" onClick={()=>goTo('shop',{})}>Shop Now</button>
+              <button className="btn btn-outline" onClick={()=>goTo('brands',{})}>Explore Brands</button>
+            </div>
+          </div>
+          <div className="hero-visual"><HeroArt/></div>
+        </div>
+      </section>
+
+      <section className="section wrap">
+        <div className="section-head">
+          <h2>Shop by category</h2>
+          <p>Three ways to browse the full catalog — same considered fabrics throughout.</p>
+        </div>
+        <div className="cat-grid">
+          {['men','women','unisex'].map((g,i)=>(
+            <div key={g} className="cat-card" onClick={()=>goTo('category',{gender:g})}>
+              <div className="cg"><GarmentArt category={['Jackets','Dresses','Hoodies'][i]} big/></div>
+              <div className="ov"/>
+              <div className="arrow"><Icon.arrow width="16" height="16"/></div>
+              <div className="lbl">
+                <div className="eyebrow">{PRODUCTS.filter(p=>p.gender===g).length} pieces</div>
+                <h3 style={{textTransform:'capitalize'}}>{g==='unisex'?'Unisex':g}</h3>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="section wrap">
+        <div className="section-head">
+          <h2>New arrivals</h2>
+          <p>Fresh drops from across the marketplace.</p>
+          <button className="link-btn" onClick={()=>goTo('shop',{tag:'new'})}>View all →</button>
+        </div>
+        <div className="prod-grid">
+          {newArrivals.map(p=> <ProductCard key={p.id} p={p} ctx={ctx}/>)}
+        </div>
+      </section>
+
+      <section className="section wrap">
+        <div className="section-head">
+          <h2>Featured brands</h2>
+          <p>The independent labels behind every piece.</p>
+          <button className="link-btn" onClick={()=>goTo('brands',{})}>All brands →</button>
+        </div>
+        <div className="brand-grid">
+          {BRAND_DEFS.slice(0,3).map(b=> <BrandCard key={b.id} b={b} ctx={ctx}/>)}
+        </div>
+      </section>
+
+      <section className="section wrap">
+        <div className="promo">
+          <div>
+            <div className="eyebrow" style={{color:'#B9873B', marginBottom:10}}>Limited collection</div>
+            <h3>The Autumn Capsule — up to 20% off select knitwear.</h3>
+          </div>
+          <button className="btn" onClick={()=>goTo('shop',{tag:'sale'})}>Shop the Sale</button>
+        </div>
+      </section>
+
+      <section className="section wrap">
+        <div className="section-head">
+          <h2>Trending now</h2>
+          <p>What the marketplace is buying this week.</p>
+        </div>
+        <div className="prod-grid">
+          {trending.map(p=> <ProductCard key={p.id} p={p} ctx={ctx}/>)}
+        </div>
+      </section>
+
+      <section className="section-tight wrap">
+        <NewsletterBox ctx={ctx}/>
+      </section>
+    </div>
+  );
+}
+
+function NewsletterBox({ctx}){
+  const [email,setEmail] = useState('');
+  const [done,setDone] = useState(false);
+  return (
+    <div className="newsletter">
+      <h3 className="serif">Stay close to the collections</h3>
+      <p>New brands, new drops and marketplace promotions — no spam, unsubscribe anytime.</p>
+      {done ? <div className="eyebrow" style={{color:'var(--teal)'}}>✓ You're subscribed</div> : (
+        <form className="nl-form" onSubmit={e=>{e.preventDefault(); if(email){setDone(true); ctx.pushToast('Subscribed — welcome to M3RAFSH');}}}>
+          <input type="email" required placeholder="you@email.com" value={email} onChange={e=>setEmail(e.target.value)}/>
+          <button className="btn" type="submit">Subscribe</button>
+        </form>
+      )}
+    </div>
+  );
+}
+
+function ProductCard({p, ctx}){
+  const {goTo, wishlist, toggleWishlist, addToCart, recordView} = ctx;
+  const isFav = wishlist.includes(p.id);
+  const fp = finalPrice(p);
+  function open(){ recordView(p.id); goTo('product',{id:p.id}); }
+  function quickAdd(e){
+    e.stopPropagation();
+    addToCart(p, p.sizes[Math.floor(p.sizes.length/2)], p.colors[0].name, 1);
+  }
+  return (
+    <div className="prod-card" onClick={open}>
+      <div className="prod-media">
+        <div className="prod-tags">
+          {p.tags.includes('new') && <span className="tag-chip">New</span>}
+          {p.discount>0 && <span className="tag-chip sale">-{p.discount}%</span>}
+        </div>
+        <button className={'fav-btn'+(isFav?' on':'')} onClick={e=>{e.stopPropagation(); toggleWishlist(p.id);}} aria-label="Save">
+          <Icon.heart width="16" height="16"/>
+        </button>
+        <GarmentArt category={p.category} image={p.image}/>
+        <div className="quick-add">
+          <button className="btn btn-block btn-sm" onClick={quickAdd}>Quick Add</button>
+        </div>
+      </div>
+      <div className="prod-info">
+        <div className="b">{p.brand}</div>
+        <div className="n">{p.name}</div>
+        <div className="price">
+          {p.discount>0 && <span className="strike">{fmt(p.price)}</span>}
+          <span className={p.discount>0?'now':''}>{fmt(fp)}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function BrandCard({b, ctx}){
+  const {goTo} = ctx;
+  const count = PRODUCTS.filter(p=>p.brandId===b.id).length;
+  return (
+    <div className="brand-card" onClick={()=>goTo('brand',{id:b.id})}>
+      <div className="brand-cover"><BrandCoverArt brand={b}/></div>
+      <div className="brand-body">
+        <div className="brand-logo-row">
+          <div className="brand-mark" style={{background:b.color}}>{b.name[0]}</div>
+          <h3>{b.name}</h3>
+        </div>
+        <p>{b.desc}</p>
+        <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
+          <span className="brand-count">{count} products</span>
+          <button className="btn btn-outline btn-sm" onClick={(e)=>{e.stopPropagation(); goTo('brand',{id:b.id});}}>Shop Brand</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Shop({ctx}){
+  const {route, goTo} = ctx;
+  const p = route.params||{};
+  const [query, setQuery] = useState(p.query||'');
+  const [genderF, setGenderF] = useState(p.gender ? [p.gender] : []);
+  const [catF, setCatF] = useState(p.category ? [p.category] : []);
+  const [brandF, setBrandF] = useState(p.brandId ? [p.brandId] : []);
+  const [colorF, setColorF] = useState([]);
+  const [sizeF, setSizeF] = useState([]);
+  const [maxPrice, setMaxPrice] = useState(3000);
+  const [inStockOnly, setInStockOnly] = useState(false);
+  const [sort, setSort] = useState('featured');
+  const searchRef = useRef(null);
+
+  useEffect(()=>{
+    setGenderF(p.gender?[p.gender]:[]);
+    setCatF(p.category?[p.category]:[]);
+    setBrandF(p.brandId?[p.brandId]:[]);
+    if(p.query!==undefined) setQuery(p.query);
+    if(p.focusSearch && searchRef.current) setTimeout(()=>searchRef.current.focus(),50);
+  },[route]);
+
+  const allCats = useMemo(()=>{
+    const s = new Set();
+    Object.values(CATEGORIES).forEach(list=>list.forEach(c=>s.add(c)));
+    return Array.from(s);
+  },[]);
+
+  let results = PRODUCTS.filter(prod=>{
+    if(genderF.length && !genderF.includes(prod.gender)) return false;
+    if(catF.length && !catF.includes(prod.category)) return false;
+    if(brandF.length && !brandF.includes(prod.brandId)) return false;
+    if(colorF.length && !prod.colors.some(c=>colorF.includes(c.name))) return false;
+    if(sizeF.length && !prod.sizes.some(s=>sizeF.includes(s))) return false;
+    if(finalPrice(prod) > maxPrice) return false;
+    if(inStockOnly && prod.stock<=0) return false;
+    if(p.tag && !prod.tags.includes(p.tag)) return false;
+    if(query){
+      const q = query.toLowerCase();
+      const hay = (prod.name+' '+prod.brand+' '+prod.category+' '+prod.desc).toLowerCase();
+      if(!hay.includes(q)) return false;
+    }
+    return true;
+  });
+  results = results.slice().sort((a,b)=>{
+    if(sort==='newest') return (b.tags.includes('new')?1:0)-(a.tags.includes('new')?1:0);
+    if(sort==='popular') return (b.tags.includes('trending')?1:0)-(a.tags.includes('trending')?1:0);
+    if(sort==='price-asc') return finalPrice(a)-finalPrice(b);
+    if(sort==='price-desc') return finalPrice(b)-finalPrice(a);
+    return 0;
+  });
+
+  const allColors = useMemo(()=>{
+    const m = new Map();
+    PRODUCTS.forEach(prod=>prod.colors.forEach(c=>m.set(c.name,c.hex)));
+    return Array.from(m.entries());
+  },[]);
+
+  function toggle(setFn, list, val){
+    setFn(list.includes(val) ? list.filter(x=>x!==val) : [...list, val]);
+  }
+
+  const title = p.gender ? (p.gender==='unisex'?'Unisex':p.gender[0].toUpperCase()+p.gender.slice(1))
+    : p.tag==='new' ? 'New Arrivals' : p.tag==='sale' ? 'Sale' : 'Shop All';
+
+  return (
+    <div className="wrap shop-head">
+      <div className="crumbs">
+        <a href="#" onClick={e=>{e.preventDefault(); ctx.goTo('home');}}>Home</a><span>/</span>
+        <span style={{color:'var(--ink)'}}>{title}</span>
+      </div>
+      <div className="section-head" style={{marginBottom:20}}>
+        <h2>{title}</h2>
+      </div>
+      <div className="searchbar">
+        <Icon.search width="17" height="17"/>
+        <input ref={searchRef} placeholder="Search products, brands, categories…" value={query} onChange={e=>setQuery(e.target.value)}/>
+        {query && <button className="icon-btn" onClick={()=>setQuery('')}><Icon.close width="15" height="15"/></button>}
+      </div>
+      <div className="shop-layout">
+        <aside>
+          <div className="filter-box">
+            <h5>Gender</h5>
+            {['men','women','unisex'].map(g=>(
+              <label key={g} className="filter-opt"><input type="checkbox" checked={genderF.includes(g)} onChange={()=>toggle(setGenderF,genderF,g)}/> <span style={{textTransform:'capitalize'}}>{g==='unisex'?'Unisex':g}</span></label>
+            ))}
+          </div>
+          <div className="filter-box">
+            <h5>Category</h5>
+            {allCats.map(c=>(
+              <label key={c} className="filter-opt"><input type="checkbox" checked={catF.includes(c)} onChange={()=>toggle(setCatF,catF,c)}/> {c}</label>
+            ))}
+          </div>
+          <div className="filter-box">
+            <h5>Brand</h5>
+            {BRAND_DEFS.map(b=>(
+              <label key={b.id} className="filter-opt"><input type="checkbox" checked={brandF.includes(b.id)} onChange={()=>toggle(setBrandF,brandF,b.id)}/> {b.name}</label>
+            ))}
+          </div>
+          <div className="filter-box">
+            <h5>Color</h5>
+            <div className="swatch-row">
+              {allColors.map(([name,hex])=>(
+                <span key={name} title={name} className={'swatch'+(colorF.includes(name)?' sel':'')} style={{background:hex}} onClick={()=>toggle(setColorF,colorF,name)}/>
+              ))}
+            </div>
+          </div>
+          <div className="filter-box">
+            <h5>Size</h5>
+            <div className="size-row">
+              {['XS','S','M','L','XL','28','30','32','34','36','One Size'].map(s=>(
+                <span key={s} className={'size-chip'+(sizeF.includes(s)?' sel':'')} style={{minWidth:'auto'}} onClick={()=>toggle(setSizeF,sizeF,s)}>{s}</span>
+              ))}
+            </div>
+          </div>
+          <div className="filter-box">
+            <h5>Price</h5>
+            <input type="range" min="300" max="3000" step="50" value={maxPrice} onChange={e=>setMaxPrice(Number(e.target.value))} style={{width:'100%'}}/>
+            <div className="range-row"><span>300 EGP</span><span>Up to {fmt(maxPrice)}</span></div>
+          </div>
+          <div className="filter-box">
+            <label className="filter-opt"><input type="checkbox" checked={inStockOnly} onChange={e=>setInStockOnly(e.target.checked)}/> In stock only</label>
+          </div>
+        </aside>
+        <div>
+          <div className="shop-toolbar">
+            <span className="result-count">{results.length} results</span>
+            <select className="sort-select" value={sort} onChange={e=>setSort(e.target.value)}>
+              <option value="featured">Sort: Featured</option>
+              <option value="newest">Newest</option>
+              <option value="popular">Most Popular</option>
+              <option value="price-asc">Price: Low to High</option>
+              <option value="price-desc">Price: High to Low</option>
+            </select>
+          </div>
+          {results.length===0 ? (
+            <div className="empty-state">
+              <h3>No products match those filters</h3>
+              <p>Try widening your price range or clearing a filter.</p>
+            </div>
+          ) : (
+            <div className="prod-grid">
+              {results.map(prod=> <ProductCard key={prod.id} p={prod} ctx={ctx}/>)}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Brands({ctx}){
+  return (
+    <div>
+      <div className="page-title-band"><div className="wrap"><h1>Our Brands</h1><p style={{marginTop:8, color:'var(--ink-soft)'}}>{BRAND_DEFS.length} independent labels, one marketplace.</p></div></div>
+      <div className="wrap section">
+        <div className="brand-grid">
+          {BRAND_DEFS.map(b=> <BrandCard key={b.id} b={b} ctx={ctx}/>)}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function BrandStorefront({ctx}){
+  const {route, goTo} = ctx;
+  const b = BRAND_DEFS.find(x=>x.id===route.params.id) || BRAND_DEFS[0];
+  const items = PRODUCTS.filter(p=>p.brandId===b.id);
+  const featured = items.filter(p=>p.tags.length>0).slice(0,4).length? items.filter(p=>p.tags.length>0).slice(0,4) : items.slice(0,4);
+  return (
+    <div>
+      <div style={{height:260, position:'relative'}}>
+        <div style={{position:'absolute', inset:0}}><BrandCoverArt brand={b}/></div>
+      </div>
+      <div className="wrap" style={{marginTop:-40, position:'relative', zIndex:2}}>
+        <div style={{background:'var(--paper)', border:'1px solid var(--sand-line)', borderRadius:2, padding:'26px 30px', display:'flex', gap:18, alignItems:'center', flexWrap:'wrap'}}>
+          <div className="brand-mark" style={{background:b.color, width:56, height:56, fontSize:22}}>{b.name[0]}</div>
+          <div style={{flex:1, minWidth:220}}>
+            <h1 className="serif" style={{fontSize:28}}>{b.name}</h1>
+            <p style={{color:'var(--ink-soft)', fontSize:13.5, marginTop:6, maxWidth:520}}>{b.desc}</p>
+          </div>
+          <span className="eyebrow">{items.length} products</span>
+        </div>
+      </div>
+      <div className="wrap section">
+        <div className="section-head"><h2>Featured from {b.name}</h2></div>
+        <div className="prod-grid">{featured.map(p=><ProductCard key={p.id} p={p} ctx={ctx}/>)}</div>
+      </div>
+      <div className="wrap section" style={{paddingTop:0}}>
+        <div className="section-head"><h2>All products</h2></div>
+        <div className="prod-grid">{items.map(p=><ProductCard key={p.id} p={p} ctx={ctx}/>)}</div>
+      </div>
+    </div>
+  );
+}
+
+function ProductPage({ctx}){
+  const {route, goTo, wishlist, toggleWishlist, addToCart, recentlyViewed, recordView} = ctx;
+  const p = PRODUCTS.find(x=>x.id===route.params.id);
+  const [color, setColor] = useState(p?p.colors[0].name:null);
+  const [size, setSize] = useState(null);
+  const [qty, setQty] = useState(1);
+  const [sizeErr, setSizeErr] = useState(false);
+  const [openAcc, setOpenAcc] = useState('shipping');
+  const [zoom, setZoom] = useState(false);
+
+  useEffect(()=>{ if(p){ recordView(p.id); setColor(p.colors[0].name); setSize(null); setQty(1);} },[route.params.id]);
+
+  if(!p) return <div className="wrap section">Product not found.</div>;
+  const b = brandOf(p);
+  const fp = finalPrice(p);
+  const isFav = wishlist.includes(p.id);
+  const related = PRODUCTS.filter(x=>x.id!==p.id && (x.category===p.category || x.brandId===p.brandId)).slice(0,6);
+  const recommended = PRODUCTS.filter(x=>x.id!==p.id && x.gender===p.gender).sort(()=>0.5-Math.random()).slice(0,6);
+
+  function handleAdd(){
+    if(!size){ setSizeErr(true); return; }
+    addToCart(p, size, color, qty);
+  }
+
+  return (
+    <div className="wrap">
+      <div className="crumbs" style={{marginTop:24}}>
+        <a href="#" onClick={e=>{e.preventDefault(); goTo('home');}}>Home</a><span>/</span>
+        <a href="#" onClick={e=>{e.preventDefault(); goTo('category',{gender:p.gender});}} style={{textTransform:'capitalize'}}>{p.gender}</a><span>/</span>
+        <a href="#" onClick={e=>{e.preventDefault(); goTo('shop',{category:p.category});}}>{p.category}</a><span>/</span>
+        <span style={{color:'var(--ink)'}}>{p.name}</span>
+      </div>
+      <div className="pdp">
+        <div>
+          <div className="pdp-gallery-main" onClick={()=>setZoom(true)}>
+            <GarmentArt category={p.category} image={p.image} big/>
+          </div>
+          <div className="pdp-thumbs">
+            {[0,1,2].map(i=>(
+              <div key={i} className={'pdp-thumb'+(i===0?' sel':'')}><GarmentArt category={p.category} image={p.image}/></div>
+            ))}
+          </div>
+        </div>
+        <div className="pdp-side">
+          <a className="brand-link" href="#" onClick={e=>{e.preventDefault(); goTo('brand',{id:p.brandId});}}>{p.brand}</a>
+          <h1>{p.name}</h1>
+          <div className="pdp-price">
+            {p.discount>0 && <span className="strike">{fmt(p.price)}</span>}
+            <span className={p.discount>0?'now':''}>{fmt(fp)}</span>
+            {p.discount>0 && <span className="tag-chip sale">-{p.discount}%</span>}
+          </div>
+          <p className="pdp-desc">{p.desc}</p>
+
+          <div className="opt-block">
+            <div className="opt-label"><span>Color: {color}</span></div>
+            <div className="swatch-row">
+              {p.colors.map(c=>(
+                <span key={c.name} title={c.name} className={'swatch'+(color===c.name?' sel':'')} style={{background:c.hex}} onClick={()=>setColor(c.name)}/>
+              ))}
+            </div>
+          </div>
+
+          <div className="opt-block">
+            <div className="opt-label"><span>Size {size?`— ${size}`:''}</span><button onClick={()=>ctx.pushToast('Size guide: check the fit chart on the Sizing info page.')}>Size guide</button></div>
+            <div className="size-row">
+              {p.sizes.map(s=>(
+                <span key={s} className={'size-chip'+(size===s?' sel':'')} onClick={()=>{setSize(s); setSizeErr(false);}}>{s}</span>
+              ))}
+            </div>
+            {sizeErr && <div className="field-err" style={{color:'var(--err)', fontSize:12, marginTop:8}}>Please select a size before adding to cart.</div>}
+          </div>
+
+          <div className="opt-block">
+            <div className="opt-label"><span>Quantity</span></div>
+            <div className="qty-row">
+              <button onClick={()=>setQty(q=>Math.max(1,q-1))}><Icon.minus width="14" height="14"/></button>
+              <span>{qty}</span>
+              <button onClick={()=>setQty(q=>Math.min(p.stock,q+1))}><Icon.plus width="14" height="14"/></button>
+            </div>
+          </div>
+
+          <div className="stock-note"><span className={'dot'+(p.stock<8?' low':'')}/> {p.stock<8 ? `Only ${p.stock} left in stock` : 'In stock'}</div>
+
+          <div className="pdp-actions">
+            <button className="btn btn-block" onClick={handleAdd} disabled={p.stock<=0}>{p.stock<=0?'Out of Stock':'Add to Cart'}</button>
+            <button className={'btn btn-outline'+(isFav?'':'')} onClick={()=>toggleWishlist(p.id)} aria-label="Save" style={{minWidth:52}}>
+              <Icon.heart width="17" height="17" style={isFav?{fill:'var(--brick)',stroke:'var(--brick)'}:{}}/>
+            </button>
+          </div>
+
+          <div className="accordion">
+            {[
+              ['shipping','Shipping information','Orders ship within 2–4 business days from the brand\u2019s local studio. Standard delivery takes 3–6 days; express options are available at checkout.'],
+              ['returns','Returns','Unworn items with tags attached can be returned within 14 days of delivery for a full refund to your original payment method.'],
+              ['care','Materials & care','Made from '+ (p.category==='Knitwear' ? 'a regional cotton-wool blend — hand wash cold, dry flat.' : 'considered natural-leaning fabrics — check the care label for full instructions.'),],
+            ].map(([key,title,body])=>(
+              <div className="acc-item" key={key}>
+                <div className="acc-head" onClick={()=>setOpenAcc(openAcc===key?null:key)}>
+                  <span>{title}</span>
+                  <Icon.chevDown width="16" height="16" style={{transform:openAcc===key?'rotate(180deg)':'none', transition:'transform .2s'}}/>
+                </div>
+                {openAcc===key && <div className="acc-body">{body}</div>}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="section">
+        <div className="section-head"><h2>You may also like</h2></div>
+        <div className="related-strip">{related.map(r=> <ProductCard key={r.id} p={r} ctx={ctx}/>)}</div>
+      </div>
+      <div className="section" style={{paddingTop:0}}>
+        <div className="section-head"><h2>Recommended for you</h2></div>
+        <div className="related-strip">{recommended.map(r=> <ProductCard key={r.id} p={r} ctx={ctx}/>)}</div>
+      </div>
+      {recentlyViewed.filter(id=>id!==p.id).length>0 && (
+        <div className="section" style={{paddingTop:0}}>
+          <div className="section-head"><h2>Recently viewed</h2></div>
+          <div className="related-strip">
+            {recentlyViewed.filter(id=>id!==p.id).map(id=>PRODUCTS.find(x=>x.id===id)).filter(Boolean).map(r=> <ProductCard key={r.id} p={r} ctx={ctx}/>)}
+          </div>
+        </div>
+      )}
+      {zoom && (
+        <div className="zoom-scrim" onClick={()=>setZoom(false)}>
+          <svg viewBox="0 0 120 170" style={{width:420, height:594}}>
+            <GarmentArt category={p.category} image={p.image} big/>
+          </svg>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function CartLine({line, idx, ctx}){
+  const p = PRODUCTS.find(x=>x.id===line.productId);
+  if(!p) return null;
+  const b = brandOf(p);
+  return (
+    <div className="cart-line">
+      <div className="cimg"><GarmentArt category={p.category} image={p.image}/></div>
+      <div>
+        <div className="cbrand">{p.brand}</div>
+        <div className="cname">{p.name}</div>
+        <div className="cmeta">{line.color} · {line.size}</div>
+        <div className="crow">
+          <div className="qty-row" style={{transform:'scale(0.85)', transformOrigin:'left center'}}>
+            <button onClick={()=>ctx.updateCartQty(idx, line.qty-1)}><Icon.minus width="12" height="12"/></button>
+            <span>{line.qty}</span>
+            <button onClick={()=>ctx.updateCartQty(idx, line.qty+1)}><Icon.plus width="12" height="12"/></button>
+          </div>
+          <span className="cprice">{fmt(finalPrice(p)*line.qty)}</span>
+        </div>
+        <div className="cart-actions-row" style={{marginTop:8}}>
+          <button className="link-btn" onClick={()=>ctx.removeCartLine(idx)}>Remove</button>
+          <button className="link-btn" onClick={()=>ctx.toggleSaveForLater(idx)}>{line.savedForLater?'Move to cart':'Save for later'}</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CartDrawer({ctx}){
+  const {cart, setCartOpen, goTo, handleCheckoutClick} = ctx;
+  const active = cart.filter(l=>!l.savedForLater);
+  const saved = cart.filter(l=>l.savedForLater);
+  const subtotal = active.reduce((s,l)=>{ const p=PRODUCTS.find(x=>x.id===l.productId); return s + (p?finalPrice(p)*l.qty:0); },0);
+  const shipping = subtotal>1500 || subtotal===0 ? 0 : 90;
+  const total = subtotal+shipping;
+  return (
+    <React.Fragment>
+      <div className="drawer-scrim" onClick={()=>setCartOpen(false)}/>
+      <div className="drawer">
+        <div className="drawer-head">
+          <h3>Your Cart {active.length>0?`(${active.reduce((s,l)=>s+l.qty,0)})`:''}</h3>
+          <button className="icon-btn" onClick={()=>setCartOpen(false)}><Icon.close width="20" height="20"/></button>
+        </div>
+        <div className="drawer-body">
+          {active.length===0 && saved.length===0 && (
+            <div className="empty-state">
+              <h3>Your cart is empty</h3>
+              <p>Browse the shop to find something you'll love.</p>
+              <div style={{marginTop:20}}><button className="btn" onClick={()=>{setCartOpen(false); goTo('shop',{});}}>Continue Shopping</button></div>
+            </div>
+          )}
+          {active.map((l,i)=>{
+            const realIdx = cart.indexOf(l);
+            return <CartLine key={i} line={l} idx={realIdx} ctx={ctx}/>;
+          })}
+          {saved.length>0 && (
+            <div style={{marginTop:20}}>
+              <div className="eyebrow" style={{marginBottom:8}}>Saved for later ({saved.length})</div>
+              {saved.map((l,i)=>{ const realIdx = cart.indexOf(l); return <CartLine key={i} line={l} idx={realIdx} ctx={ctx}/>; })}
+            </div>
+          )}
+        </div>
+        {active.length>0 && (
+          <div className="drawer-foot">
+            <div className="sum-row"><span>Subtotal</span><span className="mono">{fmt(subtotal)}</span></div>
+            <div className="sum-row"><span>Shipping</span><span className="mono">{shipping===0?'Free':fmt(shipping)}</span></div>
+            <div className="sum-row total"><span>Estimated total</span><span className="mono">{fmt(total)}</span></div>
+            <div style={{display:'flex', flexDirection:'column', gap:10, marginTop:16}}>
+              <button className="btn btn-block" onClick={handleCheckoutClick}>Proceed to Checkout</button>
+              <button className="btn btn-outline btn-block" onClick={()=>{setCartOpen(false); goTo('shop',{});}}>Continue Shopping</button>
+            </div>
+          </div>
+        )}
+      </div>
+    </React.Fragment>
+  );
+}
+
+function AuthModal({ctx}){
+  const {authMode, setAuthMode, setAuthOpen, handleAuthSuccess, authIntent} = ctx;
+  const isSignup = authMode==='signup';
+  const [form, setForm] = useState({name:'',email:'',password:'',confirm:'',phone:'',terms:false, remember:false});
+  const [errs, setErrs] = useState({});
+
+  function submit(e){
+    e.preventDefault();
+    const newErrs = {};
+    if(isSignup && !form.name.trim()) newErrs.name = 'Enter your name';
+    if(!form.email.trim() || !form.email.includes('@')) newErrs.email = 'Enter a valid email';
+    if(!form.password || form.password.length<4) newErrs.password = 'Password must be at least 4 characters';
+    if(isSignup && form.confirm!==form.password) newErrs.confirm = 'Passwords do not match';
+    if(isSignup && !form.terms) newErrs.terms = 'You must accept the terms to continue';
+    setErrs(newErrs);
+    if(Object.keys(newErrs).length) return;
+    handleAuthSuccess({name: isSignup ? form.name : form.email.split('@')[0].replace(/\./g,' '), email: form.email, phone: form.phone});
+  }
+
+  return (
+    <div className="auth-scrim" onClick={(e)=>{ if(e.target===e.currentTarget) setAuthOpen(false); }}>
+      <div className="auth-card">
+        <button className="auth-close icon-btn" onClick={()=>setAuthOpen(false)}><Icon.close width="18" height="18"/></button>
+        {authIntent?.page==='checkout' && (
+          <div className="eyebrow" style={{color:'var(--teal)', marginBottom:14}}>Your cart is ready — log in to continue to checkout</div>
+        )}
+        <h2>{isSignup?'Create your account':'Welcome back'}</h2>
+        <p className="sub">{isSignup?'Join M3RAFSH to check out, track orders and save your favorites.':'Log in to continue to checkout.'}</p>
+        <form onSubmit={submit}>
+          {isSignup && (
+            <div className={'field'+(errs.name?' has-err':'')}>
+              <label>Full name</label>
+              <input value={form.name} onChange={e=>setForm(f=>({...f,name:e.target.value}))}/>
+              {errs.name && <div className="err-text">{errs.name}</div>}
+            </div>
+          )}
+          <div className={'field'+(errs.email?' has-err':'')}>
+            <label>Email</label>
+            <input type="email" value={form.email} onChange={e=>setForm(f=>({...f,email:e.target.value}))}/>
+            {errs.email && <div className="err-text">{errs.email}</div>}
+          </div>
+          <div className={'field'+(errs.password?' has-err':'')}>
+            <label>Password</label>
+            <input type="password" value={form.password} onChange={e=>setForm(f=>({...f,password:e.target.value}))}/>
+            {errs.password && <div className="err-text">{errs.password}</div>}
+          </div>
+          {isSignup && (
+            <div className={'field'+(errs.confirm?' has-err':'')}>
+              <label>Confirm password</label>
+              <input type="password" value={form.confirm} onChange={e=>setForm(f=>({...f,confirm:e.target.value}))}/>
+              {errs.confirm && <div className="err-text">{errs.confirm}</div>}
+            </div>
+          )}
+          {isSignup && (
+            <div className="field">
+              <label>Phone (optional)</label>
+              <input value={form.phone} onChange={e=>setForm(f=>({...f,phone:e.target.value}))}/>
+            </div>
+          )}
+          {isSignup ? (
+            <label className="check-row"><input type="checkbox" checked={form.terms} onChange={e=>setForm(f=>({...f,terms:e.target.checked}))}/> I agree to the Terms of Service and Privacy Policy</label>
+          ) : (
+            <div style={{display:'flex', justifyContent:'space-between', marginBottom:20}}>
+              <label className="check-row" style={{marginBottom:0}}><input type="checkbox" checked={form.remember} onChange={e=>setForm(f=>({...f,remember:e.target.checked}))}/> Remember me</label>
+              <button type="button" className="link-btn" onClick={()=>ctx.pushToast('Password reset link sent')}>Forgot password?</button>
+            </div>
+          )}
+          {errs.terms && <div className="err-text" style={{marginTop:-12, marginBottom:14}}>{errs.terms}</div>}
+          <button className="btn btn-block" type="submit">{isSignup?'Create Account':'Log In'}</button>
+        </form>
+        <div className="auth-switch">
+          {isSignup ? 'Already have an account?' : "Don't have an account?"}{' '}
+          <button className="link-btn" onClick={()=>setAuthMode(isSignup?'login':'signup')}>{isSignup?'Log in':'Create one'}</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Checkout({ctx}){
+  const {cartActiveLines, goTo, addresses, setAddresses, paymentMethods, setPaymentMethods, user, placeOrder} = ctx;
+  const [step, setStep] = useState(1);
+  const [contact, setContact] = useState({email:user?.email||'', phone:''});
+  const [selectedAddr, setSelectedAddr] = useState(addresses.find(a=>a.default)?.id || null);
+  const [newAddr, setNewAddr] = useState({label:'Home', name:'', line1:'', city:'', notes:''});
+  const [showNewAddr, setShowNewAddr] = useState(addresses.length===0);
+  const [delivery, setDelivery] = useState('standard');
+  const [selectedPm, setSelectedPm] = useState(paymentMethods[0]?.id || null);
+  const [newPm, setNewPm] = useState({card:'', name:'', exp:''});
+  const [showNewPm, setShowNewPm] = useState(paymentMethods.length===0);
+
+  const items = cartActiveLines.map(l=>({...l, p:PRODUCTS.find(x=>x.id===l.productId)})).filter(l=>l.p);
+  const subtotal = items.reduce((s,l)=>s+finalPrice(l.p)*l.qty,0);
+  const shippingCost = delivery==='express' ? 150 : (subtotal>1500?0:90);
+  const total = subtotal+shippingCost;
+
+  if(items.length===0){
+    return (
+      <div className="wrap" style={{padding:'80px 0', textAlign:'center'}}>
+        <h2 className="serif">Your cart is empty</h2>
+        <p style={{color:'var(--ink-soft)', margin:'12px 0 24px'}}>Add something to your bag before checking out.</p>
+        <button className="btn" onClick={()=>goTo('shop',{})}>Shop Now</button>
+      </div>
+    );
+  }
+
+  function addAddress(){
+    if(!newAddr.name || !newAddr.line1 || !newAddr.city) return ctx.pushToast('Please complete the address fields');
+    const addr = {id:'addr'+Date.now(), ...newAddr, default:addresses.length===0};
+    setAddresses(a=>[...a, addr]);
+    setSelectedAddr(addr.id);
+    setShowNewAddr(false);
+  }
+  function addPayment(){
+    if(!newPm.card || newPm.card.replace(/\s/g,'').length<12 || !newPm.name || !newPm.exp) return ctx.pushToast('Please complete the payment fields');
+    const last4 = newPm.card.replace(/\s/g,'').slice(-4);
+    const pm = {id:'pm'+Date.now(), brand: newPm.card.startsWith('4')?'Visa':'Mastercard', last4, exp:newPm.exp, name:newPm.name};
+    setPaymentMethods(p=>[...p, pm]);
+    setSelectedPm(pm.id);
+    setShowNewPm(false);
+    setNewPm({card:'',name:'',exp:''});
+  }
+
+  function reviewAndPlace(){
+    const addr = addresses.find(a=>a.id===selectedAddr);
+    const pm = paymentMethods.find(x=>x.id===selectedPm);
+    const order = placeOrder({address:addr, payment:pm, deliveryMethod:delivery, shippingCost});
+    goTo('confirmation',{orderId:order.id});
+  }
+
+  const steps = ['Contact','Shipping','Delivery','Payment','Review'];
+
+  return (
+    <div className="wrap checkout-grid">
+      <div>
+        <div className="steps-row">
+          {steps.map((s,i)=>(
+            <div key={s} className={'step-pill'+(step===i+1?' active':'')+(step>i+1?' done':'')}>
+              <span className="num">{step>i+1?<Icon.check width="12" height="12"/>:i+1}</span>{s}
+            </div>
+          ))}
+        </div>
+
+        {step===1 && (
+          <div className="co-card">
+            <h3>Contact information</h3>
+            <div className="field"><label>Email</label><input type="email" value={contact.email} onChange={e=>setContact(c=>({...c,email:e.target.value}))}/></div>
+            <div className="field"><label>Phone</label><input value={contact.phone} onChange={e=>setContact(c=>({...c,phone:e.target.value}))} placeholder="+20 1xx xxx xxxx"/></div>
+            <button className="btn" onClick={()=>{ if(!contact.email){ctx.pushToast('Enter an email to continue'); return;} setStep(2);}}>Continue to Shipping</button>
+          </div>
+        )}
+
+        {step===2 && (
+          <div className="co-card">
+            <h3>Shipping address</h3>
+            {addresses.map(a=>(
+              <div key={a.id} className={'addr-option'+(selectedAddr===a.id?' sel':'')} onClick={()=>{setSelectedAddr(a.id); setShowNewAddr(false);}}>
+                <input type="radio" checked={selectedAddr===a.id} readOnly/>
+                <div><b>{a.label}</b> — {a.name}<br/><span style={{color:'var(--ink-soft)', fontSize:12.5}}>{a.line1}, {a.city}</span></div>
+              </div>
+            ))}
+            {!showNewAddr && <button className="link-btn" onClick={()=>setShowNewAddr(true)}>+ Add a new address</button>}
+            {showNewAddr && (
+              <div style={{marginTop:14, paddingTop:14, borderTop:'1px solid var(--sand-line)'}}>
+                <div className="field-grid2">
+                  <div className="field"><label>Label</label><input value={newAddr.label} onChange={e=>setNewAddr(a=>({...a,label:e.target.value}))} placeholder="Home / Work"/></div>
+                  <div className="field"><label>Full name</label><input value={newAddr.name} onChange={e=>setNewAddr(a=>({...a,name:e.target.value}))}/></div>
+                </div>
+                <div className="field"><label>Address</label><input value={newAddr.line1} onChange={e=>setNewAddr(a=>({...a,line1:e.target.value}))} placeholder="Street, building, apartment"/></div>
+                <div className="field"><label>City</label><input value={newAddr.city} onChange={e=>setNewAddr(a=>({...a,city:e.target.value}))}/></div>
+                <button className="btn btn-outline btn-sm" type="button" onClick={addAddress}>Save Address</button>
+              </div>
+            )}
+            <div style={{marginTop:20, display:'flex', gap:10}}>
+              <button className="btn btn-ghost" onClick={()=>setStep(1)}>Back</button>
+              <button className="btn" onClick={()=>{ if(!selectedAddr){ctx.pushToast('Select or add an address'); return;} setStep(3);}}>Continue to Delivery</button>
+            </div>
+          </div>
+        )}
+
+        {step===3 && (
+          <div className="co-card">
+            <h3>Delivery method</h3>
+            <div className={'ship-option'+(delivery==='standard'?' sel':'')} onClick={()=>setDelivery('standard')}>
+              <div><input type="radio" checked={delivery==='standard'} readOnly/> <b style={{marginLeft:6}}>Standard</b> — 3–6 business days</div>
+              <span className="mono">{subtotal>1500?'Free':fmt(90)}</span>
+            </div>
+            <div className={'ship-option'+(delivery==='express'?' sel':'')} onClick={()=>setDelivery('express')}>
+              <div><input type="radio" checked={delivery==='express'} readOnly/> <b style={{marginLeft:6}}>Express</b> — 1–2 business days</div>
+              <span className="mono">{fmt(150)}</span>
+            </div>
+            <div style={{marginTop:20, display:'flex', gap:10}}>
+              <button className="btn btn-ghost" onClick={()=>setStep(2)}>Back</button>
+              <button className="btn" onClick={()=>setStep(4)}>Continue to Payment</button>
+            </div>
+          </div>
+        )}
+
+        {step===4 && (
+          <div className="co-card">
+            <h3>Payment</h3>
+            {paymentMethods.map(pm=>(
+              <div key={pm.id} className={'pm-option'+(selectedPm===pm.id?' sel':'')} onClick={()=>{setSelectedPm(pm.id); setShowNewPm(false);}}>
+                <input type="radio" checked={selectedPm===pm.id} readOnly/>
+                <div>{pm.brand} •••• {pm.last4} <span style={{color:'var(--ink-soft)', fontSize:12}}>· exp {pm.exp}</span></div>
+              </div>
+            ))}
+            {!showNewPm && <button className="link-btn" onClick={()=>setShowNewPm(true)}>+ Add a payment method</button>}
+            {showNewPm && (
+              <div style={{marginTop:14, paddingTop:14, borderTop:'1px solid var(--sand-line)'}}>
+                <div className="field"><label>Card number</label><input value={newPm.card} onChange={e=>setNewPm(p=>({...p,card:e.target.value}))} placeholder="4242 4242 4242 4242" maxLength="19"/></div>
+                <div className="field-grid2">
+                  <div className="field"><label>Name on card</label><input value={newPm.name} onChange={e=>setNewPm(p=>({...p,name:e.target.value}))}/></div>
+                  <div className="field"><label>Expiry (MM/YY)</label><input value={newPm.exp} onChange={e=>setNewPm(p=>({...p,exp:e.target.value}))} placeholder="08/28"/></div>
+                </div>
+                <p style={{fontSize:11.5, color:'var(--ink-soft)', marginBottom:12}}>Card details are encrypted at checkout and never stored in full — only the last 4 digits are kept on file.</p>
+                <button className="btn btn-outline btn-sm" type="button" onClick={addPayment}>Save Payment Method</button>
+              </div>
+            )}
+            <div style={{marginTop:20, display:'flex', gap:10}}>
+              <button className="btn btn-ghost" onClick={()=>setStep(3)}>Back</button>
+              <button className="btn" onClick={()=>{ if(!selectedPm){ctx.pushToast('Select or add a payment method'); return;} setStep(5);}}>Review Order</button>
+            </div>
+          </div>
+        )}
+
+        {step===5 && (
+          <div className="co-card">
+            <h3>Review your order</h3>
+            {items.map((l,i)=>(
+              <div className="mini-line" key={i}>
+                <div className="cimg"><GarmentArt category={l.p.category} image={l.p.image}/></div>
+                <div><div className="mn">{l.p.name}</div><div className="mm">{l.color} · {l.size} · Qty {l.qty}</div></div>
+                <div className="mp">{fmt(finalPrice(l.p)*l.qty)}</div>
+              </div>
+            ))}
+            <div style={{marginTop:16, fontSize:13}}>
+              <p><b>Ship to:</b> {addresses.find(a=>a.id===selectedAddr)?.name}, {addresses.find(a=>a.id===selectedAddr)?.line1}, {addresses.find(a=>a.id===selectedAddr)?.city}</p>
+              <p style={{marginTop:6}}><b>Payment:</b> {paymentMethods.find(x=>x.id===selectedPm)?.brand} •••• {paymentMethods.find(x=>x.id===selectedPm)?.last4}</p>
+              <p style={{marginTop:6}}><b>Delivery:</b> {delivery==='express'?'Express (1–2 days)':'Standard (3–6 days)'}</p>
+            </div>
+            <div style={{marginTop:20, display:'flex', gap:10}}>
+              <button className="btn btn-ghost" onClick={()=>setStep(4)}>Back</button>
+              <button className="btn" onClick={reviewAndPlace}>Place Order</button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="order-summary">
+        <h3 className="serif" style={{fontSize:18, marginBottom:16}}>Order summary</h3>
+        {items.map((l,i)=>(
+          <div className="mini-line" key={i}>
+            <div className="cimg"><GarmentArt category={l.p.category} image={l.p.image}/></div>
+            <div><div className="mn">{l.p.name}</div><div className="mm">{l.color} · {l.size} · ×{l.qty}</div></div>
+            <div className="mp">{fmt(finalPrice(l.p)*l.qty)}</div>
+          </div>
+        ))}
+        <div className="sum-row" style={{marginTop:10}}><span>Subtotal</span><span className="mono">{fmt(subtotal)}</span></div>
+        <div className="sum-row"><span>Shipping</span><span className="mono">{shippingCost===0?'Free':fmt(shippingCost)}</span></div>
+        <div className="sum-row total"><span>Total</span><span className="mono">{fmt(total)}</span></div>
+      </div>
+    </div>
+  );
+}
+
+function Confirmation({ctx}){
+  const {orders, goTo} = ctx;
+  const order = orders[0];
+  if(!order) return <div className="wrap section">No recent order found.</div>;
+  return (
+    <div className="wrap confirm-wrap">
+      <div className="confirm-icon"><Icon.check width="30" height="30"/></div>
+      <h1>Order confirmed</h1>
+      <p style={{color:'var(--ink-soft)', fontSize:14.5}}>Thank you for your purchase — a confirmation has been sent to your email.</p>
+      <div className="order-num mono">Order #{order.id}</div>
+      <div style={{display:'flex', gap:12, justifyContent:'center', flexWrap:'wrap'}}>
+        <button className="btn" onClick={()=>goTo('dashboard-order-detail',{id:order.id})}>View Order</button>
+        <button className="btn btn-outline" onClick={()=>goTo('shop',{})}>Continue Shopping</button>
+      </div>
+    </div>
+  );
+}
+
+function Dashboard({ctx, tab}){
+  const {user, goTo, requireAuth, orders, wishlist, addresses, setAddresses, paymentMethods, setPaymentMethods, handleLogout, route} = ctx;
+  useEffect(()=>{ if(!user) requireAuth('dashboard',{}); },[user]);
+  if(!user){
+    return <div className="wrap" style={{padding:'100px 0', textAlign:'center'}}>
+      <h2 className="serif">Please log in</h2>
+      <p style={{color:'var(--ink-soft)', margin:'10px 0 20px'}}>You need an account to view your dashboard.</p>
+    </div>;
+  }
+  const navList = [
+    ['Dashboard','dashboard','home'],
+    ['Orders','dashboard-orders','orders'],
+    ['Saved Items','dashboard-saved','saved'],
+    ['Addresses','dashboard-addresses','addresses'],
+    ['Payment Methods','dashboard-payments','payments'],
+    ['Account Settings','dashboard-settings','settings'],
+  ];
+  return (
+    <div className="wrap dash-layout">
+      <aside className="dash-nav">
+        {navList.map(([label,page,key])=>(
+          <a key={key} href="#" className={tab===key?'active':''} onClick={e=>{e.preventDefault(); goTo(page,{});}}>{label}</a>
+        ))}
+        <a href="#" className="logout" onClick={e=>{e.preventDefault(); handleLogout();}}>Log Out</a>
+      </aside>
+      <div>
+        {tab==='home' && <DashHome ctx={ctx}/>}
+        {tab==='orders' && <DashOrders ctx={ctx}/>}
+        {tab==='order-detail' && <DashOrderDetail ctx={ctx}/>}
+        {tab==='saved' && <DashSaved ctx={ctx}/>}
+        {tab==='addresses' && <DashAddresses ctx={ctx}/>}
+        {tab==='payments' && <DashPayments ctx={ctx}/>}
+        {tab==='settings' && <DashSettings ctx={ctx}/>}
+      </div>
+    </div>
+  );
+}
+
+function DashHome({ctx}){
+  const {user, orders, wishlist, addresses, goTo} = ctx;
+  return (
+    <div>
+      <div className="welcome-card">
+        <h2>Welcome back, {user.name.split(' ')[0]}</h2>
+        <p>Here's a snapshot of your account.</p>
+      </div>
+      <div className="dash-stats">
+        <div className="stat-card"><div className="v">{orders.length}</div><div className="l">Orders</div></div>
+        <div className="stat-card"><div className="v">{wishlist.length}</div><div className="l">Saved Items</div></div>
+        <div className="stat-card"><div className="v">{addresses.length}</div><div className="l">Addresses</div></div>
+        <div className="stat-card"><div className="v">{orders.filter(o=>o.status!=='Delivered'&&o.status!=='Cancelled').length}</div><div className="l">Active Orders</div></div>
+      </div>
+      <div className="section-head"><h2 style={{fontSize:20}}>Quick actions</h2></div>
+      <div className="quick-grid">
+        <button className="btn btn-outline" onClick={()=>goTo('dashboard-orders',{})}>View Orders</button>
+        <button className="btn btn-outline" onClick={()=>goTo('dashboard-saved',{})}>Saved Items</button>
+        <button className="btn btn-outline" onClick={()=>goTo('dashboard-addresses',{})}>Manage Addresses</button>
+        <button className="btn btn-outline" onClick={()=>goTo('dashboard-settings',{})}>Account Settings</button>
+      </div>
+      {orders.length>0 && (
+        <div style={{marginTop:34}}>
+          <div className="section-head"><h2 style={{fontSize:20}}>Recent orders</h2></div>
+          {orders.slice(0,3).map(o=> <OrderRow key={o.id} o={o} ctx={ctx}/>)}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function OrderRow({o, ctx}){
+  return (
+    <div className="order-row" onClick={()=>ctx.goTo('dashboard-order-detail',{id:o.id})}>
+      <div className="oimgs">
+        {o.items.slice(0,3).map((it,i)=>{ const p=PRODUCTS.find(x=>x.id===it.productId); return <div key={i} className="cimg">{p && <GarmentArt category={p.category} image={p.image}/>}</div>; })}
+      </div>
+      <div style={{flex:1}}>
+        <div style={{fontWeight:700, fontSize:13.5}}>#{o.id}</div>
+        <div style={{fontSize:12, color:'var(--ink-soft)'}}>{new Date(o.date).toLocaleDateString()} · {o.items.reduce((s,i)=>s+i.qty,0)} items</div>
+      </div>
+      <span className="mono" style={{fontWeight:600, fontSize:13}}>{fmt(o.total)}</span>
+      <span className={'status-pill status-'+o.status.replace(/\s/g,'')}>{o.status}</span>
+    </div>
+  );
+}
+
+function DashOrders({ctx}){
+  const {orders} = ctx;
+  return (
+    <div>
+      <div className="section-head"><h2 style={{fontSize:24}}>Orders</h2></div>
+      {orders.length===0 ? (
+        <div className="empty-state"><h3>No orders yet</h3><p>Your placed orders will appear here.</p></div>
+      ) : orders.map(o=> <OrderRow key={o.id} o={o} ctx={ctx}/>)}
+    </div>
+  );
+}
+
+function DashOrderDetail({ctx}){
+  const {route, orders, goTo} = ctx;
+  const o = orders.find(x=>x.id===route.params.id) || orders[0];
+  if(!o) return <div className="empty-state"><h3>Order not found</h3></div>;
+  const STAGES = ['Processing','Confirmed','Shipped','Out for Delivery','Delivered'];
+  const stageIdx = Math.max(0, STAGES.indexOf(o.status));
+  return (
+    <div>
+      <button className="link-btn" style={{marginBottom:14}} onClick={()=>goTo('dashboard-orders',{})}>← Back to Orders</button>
+      <div className="section-head"><h2 style={{fontSize:24}}>Order #{o.id}</h2><span className={'status-pill status-'+o.status.replace(/\s/g,'')}>{o.status}</span></div>
+      <p style={{fontSize:13, color:'var(--ink-soft)', marginBottom:24}}>Placed on {new Date(o.date).toLocaleDateString()}</p>
+      {o.status!=='Cancelled' && (
+        <div className="co-card">
+          <h3 style={{fontSize:15, display:'flex', alignItems:'center', gap:8}}><Icon.truck width="16" height="16"/> Tracking</h3>
+          <div style={{display:'flex', justifyContent:'space-between', marginTop:14}}>
+            {STAGES.map((s,i)=>(
+              <div key={s} style={{textAlign:'center', flex:1, position:'relative'}}>
+                <div style={{width:12,height:12,borderRadius:'50%', margin:'0 auto 6px', background: i<=stageIdx?'var(--teal)':'var(--sand-line)'}}/>
+                <div style={{fontSize:10.5, color: i<=stageIdx?'var(--ink)':'var(--ink-soft)'}}>{s}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+      <div className="co-card">
+        <h3 style={{fontSize:15}}>Items</h3>
+        {o.items.map((it,i)=>{ const p=PRODUCTS.find(x=>x.id===it.productId);
+          return <div className="mini-line" key={i}>
+            <div className="cimg">{p && <GarmentArt category={p.category} image={p.image}/>}</div>
+            <div><div className="mn">{it.name}</div><div className="mm">{it.brand} · {it.color} · {it.size} · ×{it.qty}</div></div>
+            <div className="mp">{fmt(it.price*it.qty)}</div>
+          </div>;
+        })}
+        <div className="sum-row" style={{marginTop:10}}><span>Subtotal</span><span className="mono">{fmt(o.subtotal)}</span></div>
+        <div className="sum-row"><span>Shipping</span><span className="mono">{o.shipping===0?'Free':fmt(o.shipping)}</span></div>
+        <div className="sum-row total"><span>Total</span><span className="mono">{fmt(o.total)}</span></div>
+      </div>
+      <div className="co-card">
+        <h3 style={{fontSize:15}}>Shipping address</h3>
+        <p style={{fontSize:13, color:'var(--ink-soft)'}}>{o.address?.name}<br/>{o.address?.line1}, {o.address?.city}</p>
+      </div>
+      <div className="co-card">
+        <h3 style={{fontSize:15}}>Payment method</h3>
+        <p style={{fontSize:13, color:'var(--ink-soft)'}}>{o.payment?.brand} •••• {o.payment?.last4}</p>
+      </div>
+    </div>
+  );
+}
+
+function DashSaved({ctx}){
+  const {wishlist, toggleWishlist, addToCart, goTo} = ctx;
+  const items = wishlist.map(id=>PRODUCTS.find(p=>p.id===id)).filter(Boolean);
+  return (
+    <div>
+      <div className="section-head"><h2 style={{fontSize:24}}>Saved Items</h2></div>
+      {items.length===0 ? (
+        <div className="empty-state"><h3>Nothing saved yet</h3><p>Tap the heart on any product to save it here.</p></div>
+      ) : (
+        <div className="saved-grid">
+          {items.map(p=>(
+            <div key={p.id}>
+              <div className="prod-card" onClick={()=>goTo('product',{id:p.id})}>
+                <div className="prod-media">
+                  <button className="fav-btn on" onClick={e=>{e.stopPropagation(); toggleWishlist(p.id);}}><Icon.heart width="16" height="16"/></button>
+                  <GarmentArt category={p.category} image={p.image}/>
+                </div>
+                <div className="prod-info"><div className="b">{p.brand}</div><div className="n">{p.name}</div><div className="price">{fmt(finalPrice(p))}</div></div>
+              </div>
+              <button className="btn btn-outline btn-sm btn-block" style={{marginTop:8}} onClick={()=>addToCart(p, p.sizes[Math.floor(p.sizes.length/2)], p.colors[0].name,1)}>Add to Cart</button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function DashAddresses({ctx}){
+  const {addresses, setAddresses} = ctx;
+  const [form, setForm] = useState({label:'Home', name:'', line1:'', city:''});
+  const [editing, setEditing] = useState(null);
+  function add(){
+    if(!form.name||!form.line1||!form.city) return ctx.pushToast('Complete all fields');
+    if(editing){
+      setAddresses(a=>a.map(x=>x.id===editing?{...x,...form}:x));
+      setEditing(null);
+    } else {
+      setAddresses(a=>[...a, {id:'addr'+Date.now(), ...form, default:a.length===0}]);
+    }
+    setForm({label:'Home',name:'',line1:'',city:''});
+  }
+  return (
+    <div>
+      <div className="section-head"><h2 style={{fontSize:24}}>Saved Addresses</h2></div>
+      {addresses.map(a=>(
+        <div key={a.id} className="co-card" style={{padding:18}}>
+          <div style={{display:'flex', justifyContent:'space-between'}}>
+            <div>
+              <div className="eyebrow" style={{marginBottom:4}}>{a.label} {a.default && '· Default'}</div>
+              <div style={{fontWeight:600, fontSize:14}}>{a.name}</div>
+              <div style={{fontSize:13, color:'var(--ink-soft)'}}>{a.line1}, {a.city}</div>
+            </div>
+            <div style={{display:'flex', gap:8, alignItems:'flex-start'}}>
+              {!a.default && <button className="link-btn" onClick={()=>setAddresses(list=>list.map(x=>({...x, default:x.id===a.id})))}>Set default</button>}
+              <button className="link-btn" onClick={()=>{setEditing(a.id); setForm({label:a.label,name:a.name,line1:a.line1,city:a.city});}}>Edit</button>
+              <button className="link-btn" style={{color:'var(--err)'}} onClick={()=>setAddresses(list=>list.filter(x=>x.id!==a.id))}>Delete</button>
+            </div>
+          </div>
+        </div>
+      ))}
+      <div className="co-card">
+        <h3 style={{fontSize:15}}>{editing?'Edit address':'Add a new address'}</h3>
+        <div className="field-grid2">
+          <div className="field"><label>Label</label><input value={form.label} onChange={e=>setForm(f=>({...f,label:e.target.value}))}/></div>
+          <div className="field"><label>Full name</label><input value={form.name} onChange={e=>setForm(f=>({...f,name:e.target.value}))}/></div>
+        </div>
+        <div className="field"><label>Address</label><input value={form.line1} onChange={e=>setForm(f=>({...f,line1:e.target.value}))}/></div>
+        <div className="field"><label>City</label><input value={form.city} onChange={e=>setForm(f=>({...f,city:e.target.value}))}/></div>
+        <button className="btn btn-sm" onClick={add}>{editing?'Save Changes':'+ Add Address'}</button>
+      </div>
+    </div>
+  );
+}
+
+function DashPayments({ctx}){
+  const {paymentMethods, setPaymentMethods} = ctx;
+  const [form, setForm] = useState({card:'',name:'',exp:''});
+  function add(){
+    if(!form.card || form.card.replace(/\s/g,'').length<12 || !form.name || !form.exp) return ctx.pushToast('Complete all fields');
+    const last4 = form.card.replace(/\s/g,'').slice(-4);
+    setPaymentMethods(p=>[...p, {id:'pm'+Date.now(), brand: form.card.startsWith('4')?'Visa':'Mastercard', last4, exp:form.exp, name:form.name}]);
+    setForm({card:'',name:'',exp:''});
+    ctx.pushToast('Payment method added');
+  }
+  return (
+    <div>
+      <div className="section-head"><h2 style={{fontSize:24}}>Payment Methods</h2></div>
+      {paymentMethods.map(pm=>(
+        <div key={pm.id} className="pm-card">
+          <div>{pm.brand} •••• {pm.last4} <span style={{color:'var(--ink-soft)', fontSize:12}}>· Expires {pm.exp}</span></div>
+          <button className="link-btn" style={{color:'var(--err)'}} onClick={()=>setPaymentMethods(list=>list.filter(x=>x.id!==pm.id))}>Remove</button>
+        </div>
+      ))}
+      <div className="co-card">
+        <h3 style={{fontSize:15}}>Add a payment method</h3>
+        <div className="field"><label>Card number</label><input value={form.card} onChange={e=>setForm(f=>({...f,card:e.target.value}))} placeholder="4242 4242 4242 4242"/></div>
+        <div className="field-grid2">
+          <div className="field"><label>Name on card</label><input value={form.name} onChange={e=>setForm(f=>({...f,name:e.target.value}))}/></div>
+          <div className="field"><label>Expiry</label><input value={form.exp} onChange={e=>setForm(f=>({...f,exp:e.target.value}))} placeholder="08/28"/></div>
+        </div>
+        <p style={{fontSize:11.5, color:'var(--ink-soft)', marginBottom:12}}>Only a masked card number is ever stored on your account.</p>
+        <button className="btn btn-sm" onClick={add}>+ Add Payment Method</button>
+      </div>
+    </div>
+  );
+}
+
+function DashSettings({ctx}){
+  const {user, setUserFn} = ctx;
+  return (
+    <div>
+      <div className="section-head"><h2 style={{fontSize:24}}>Account Settings</h2></div>
+      <div className="co-card">
+        <h3 style={{fontSize:15}}>Profile</h3>
+        <div className="field-grid2">
+          <div className="field"><label>Name</label><input defaultValue={user.name}/></div>
+          <div className="field"><label>Email</label><input defaultValue={user.email}/></div>
+        </div>
+        <button className="btn btn-sm" onClick={()=>ctx.pushToast('Profile updated')}>Save Changes</button>
+      </div>
+      <div className="co-card">
+        <h3 style={{fontSize:15}}>Password</h3>
+        <div className="field"><label>New password</label><input type="password" placeholder="••••••••"/></div>
+        <button className="btn btn-outline btn-sm" onClick={()=>ctx.pushToast('Password updated')}>Update Password</button>
+      </div>
+      <div className="co-card">
+        <h3 style={{fontSize:15}}>Notifications</h3>
+        <label className="filter-opt"><input type="checkbox" defaultChecked/> New arrivals from brands I follow</label>
+        <label className="filter-opt"><input type="checkbox" defaultChecked/> Order status updates</label>
+        <label className="filter-opt"><input type="checkbox"/> Marketing promotions</label>
+      </div>
+    </div>
+  );
+}
+
+function InfoPage({ctx}){
+  const topic = ctx.route.params.topic || 'about';
+  const content = {
+    shipping:['Shipping', 'Orders ship directly from each brand\u2019s local studio within 2–4 business days. Standard delivery arrives in 3–6 business days; express delivery arrives in 1–2 business days. Free standard shipping applies to orders over 1,500 EGP.'],
+    returns:['Returns', 'Unworn items with original tags attached can be returned within 14 days of delivery for a full refund to your original payment method. Sale items are final sale unless faulty.'],
+    sizing:['Size Guide', 'Sizes vary slightly by brand since each label cuts its own patterns locally. As a general guide: XS fits a 32" chest, S fits 34–36", M fits 38–40", L fits 42–44", and XL fits 46–48". Check each product page for brand-specific notes.'],
+    contact:['Contact', 'Have a question about an order or a brand on the marketplace? Reach the M3RAFSH team any time and we\u2019ll route you to the right place.'],
+    about:['About M3RAFSH', 'M3RAFSH brings independent local fashion labels together on one considered platform — so shoppers can discover new brands, and small studios can reach a wider audience, without losing what makes each one distinct.'],
+  }[topic] || ['Info',''];
+  return (
+    <div className="wrap simple-page">
+      <h1 className="serif" style={{fontSize:32}}>{content[0]}</h1>
+      <p style={{marginTop:14}}>{content[1]}</p>
+    </div>
+  );
+}
+
+function ToastStack({toasts}){
+  return (
+    <div className="toast-stack">
+      {toasts.map(t=>(
+        <div key={t.id} className="toast">
+          <span>{t.msg}</span>
+          {t.actionLabel && <button onClick={t.actionFn}>{t.actionLabel}</button>}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function AdminLoginGate({ctx}){
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [err, setErr] = useState(false);
+  function submit(e){
+    e.preventDefault();
+    const ok = ctx.handleAdminLogin(username.trim(), password);
+    setErr(!ok);
+  }
+  return (
+    <div className="wrap section" style={{maxWidth:420}}>
+      <div className="section-head"><h2>Admin Login</h2><p>Staff access only.</p></div>
+      <form onSubmit={submit}>
+        <div className={'field'+(err?' has-err':'')}>
+          <label>Username</label>
+          <input value={username} onChange={e=>setUsername(e.target.value)} autoFocus/>
+        </div>
+        <div className={'field'+(err?' has-err':'')}>
+          <label>Password</label>
+          <input type="password" value={password} onChange={e=>setPassword(e.target.value)}/>
+          {err && <div className="err-text">Incorrect username or password</div>}
+        </div>
+        <button className="btn btn-block" type="submit">Log In</button>
+      </form>
+    </div>
+  );
+}
+
+function AdminProductForm({ctx, product, onClose}){
+  const isEdit = !!product;
+  const [f, setF] = useState(()=> product ? {...product} : {
+    brandId: BRAND_DEFS[0].id, gender:'unisex', category:CATEGORIES.unisex[0], name:'',
+    price:500, discount:0, colorSet:'neutral', sizeSet:'top', stock:10, tags:[], image:null,
+  });
+  const genderCats = CATEGORIES[f.gender] || CATEGORIES.unisex;
+
+  function set(k,v){ setF(s=>({...s,[k]:v})); }
+  function toggleTag(t){ setF(s=>({...s, tags: s.tags.includes(t) ? s.tags.filter(x=>x!==t) : [...s.tags, t]})); }
+  function onImageFile(file){
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = ()=> set('image', reader.result);
+    reader.readAsDataURL(file);
+  }
+
+  function submit(e){
+    e.preventDefault();
+    if(!f.name.trim()){ ctx.pushToast('Product needs a name'); return; }
+    const brand = BRAND_DEFS.find(b=>b.id===f.brandId);
+    const sizeMap = {top:SIZES_TOP, bottom:SIZES_BOTTOM, one:SIZES_ONE};
+    const fields = {
+      brand: brand.name, brandId: f.brandId, gender: f.gender, category: f.category, name: f.name.trim(),
+      price: Number(f.price)||0, discount: Number(f.discount)||0, colors: COLOR_SETS[f.colorSet],
+      sizes: sizeMap[f.sizeSet], stock: Number(f.stock)||0, tags: f.tags, desc: f.desc || desc(f.category),
+      image: f.image,
+    };
+    if(isEdit){ ctx.adminUpdateProduct(product.id, fields); }
+    else{ ctx.adminAddProduct(fields); }
+    onClose();
+  }
+
+  return (
+    <div className="auth-scrim" onClick={(e)=>{ if(e.target===e.currentTarget) onClose(); }}>
+      <div className="auth-card" style={{width:560}}>
+        <button className="auth-close icon-btn" onClick={onClose}><Icon.close width="18" height="18"/></button>
+        <h2>{isEdit?'Edit product':'Add product'}</h2>
+        <p className="sub">{isEdit?product.name:'New catalog item'}</p>
+        <form onSubmit={submit}>
+          <div className="field">
+            <label>Photo</label>
+            <div style={{display:'flex', gap:14, alignItems:'center'}}>
+              <div style={{width:70, height:88, borderRadius:2, overflow:'hidden', background:'var(--sand)', flexShrink:0}}>
+                <GarmentArt category={f.category} image={f.image}/>
+              </div>
+              <div>
+                <input type="file" accept="image/*" onChange={e=>onImageFile(e.target.files[0])}/>
+                {f.image && <button type="button" className="link-btn" style={{marginTop:6, display:'block'}} onClick={()=>set('image',null)}>Remove photo</button>}
+              </div>
+            </div>
+          </div>
+          <div className="field"><label>Name</label><input value={f.name} onChange={e=>set('name',e.target.value)}/></div>
+          <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:14}}>
+            <div className="field">
+              <label>Brand</label>
+              <select value={f.brandId} onChange={e=>set('brandId',e.target.value)}>
+                {BRAND_DEFS.map(b=><option key={b.id} value={b.id}>{b.name}</option>)}
+              </select>
+            </div>
+            <div className="field">
+              <label>Gender</label>
+              <select value={f.gender} onChange={e=>{ const g=e.target.value; setF(s=>({...s, gender:g, category:CATEGORIES[g][0]})); }}>
+                <option value="men">Men</option><option value="women">Women</option><option value="unisex">Unisex</option>
+              </select>
+            </div>
+          </div>
+          <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:14}}>
+            <div className="field">
+              <label>Category</label>
+              <select value={f.category} onChange={e=>set('category',e.target.value)}>
+                {genderCats.map(c=><option key={c} value={c}>{c}</option>)}
+              </select>
+            </div>
+            <div className="field">
+              <label>Color set</label>
+              <select value={f.colorSet} onChange={e=>set('colorSet',e.target.value)}>
+                {Object.keys(COLOR_SETS).map(c=><option key={c} value={c}>{c}</option>)}
+              </select>
+            </div>
+          </div>
+          <div style={{display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:14}}>
+            <div className="field"><label>Price (EGP)</label><input type="number" min="0" value={f.price} onChange={e=>set('price',e.target.value)}/></div>
+            <div className="field"><label>Discount %</label><input type="number" min="0" max="90" value={f.discount} onChange={e=>set('discount',e.target.value)}/></div>
+            <div className="field"><label>Stock</label><input type="number" min="0" value={f.stock} onChange={e=>set('stock',e.target.value)}/></div>
+          </div>
+          <div className="field">
+            <label>Size range</label>
+            <select value={f.sizeSet} onChange={e=>set('sizeSet',e.target.value)}>
+              <option value="top">Top (XS–XL)</option>
+              <option value="bottom">Bottom (28–36)</option>
+              <option value="one">One size</option>
+            </select>
+          </div>
+          <div className="field">
+            <label>Tags</label>
+            <div style={{display:'flex', gap:16}}>
+              {['new','trending','sale'].map(t=>(
+                <label key={t} className="check-row" style={{marginBottom:0}}>
+                  <input type="checkbox" checked={f.tags.includes(t)} onChange={()=>toggleTag(t)}/> {t}
+                </label>
+              ))}
+            </div>
+          </div>
+          <div style={{display:'flex', gap:10, marginTop:10}}>
+            <button className="btn btn-block" type="submit">{isEdit?'Save changes':'Add product'}</button>
+            <button className="btn btn-outline btn-block" type="button" onClick={onClose}>Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function AdminBrandForm({ctx, brand, onClose}){
+  const isEdit = !!brand;
+  const [f, setF] = useState(()=> brand ? {...brand} : {
+    name:'', color:'#3A362F', desc:'', image:null,
+  });
+
+  function set(k,v){ setF(s=>({...s,[k]:v})); }
+  function onImageFile(file){
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = ()=> set('image', reader.result);
+    reader.readAsDataURL(file);
+  }
+
+  function submit(e){
+    e.preventDefault();
+    if(!f.name.trim()){ ctx.pushToast('Brand needs a name'); return; }
+    const fields = {
+      name: f.name.trim(), color: f.color || '#3A362F',
+      desc: f.desc.trim(), image: f.image,
+    };
+    if(isEdit){ ctx.adminUpdateBrand(brand.id, fields); }
+    else{ ctx.adminAddBrand(fields); }
+    onClose();
+  }
+
+  return (
+    <div className="auth-scrim" onClick={(e)=>{ if(e.target===e.currentTarget) onClose(); }}>
+      <div className="auth-card" style={{width:520}}>
+        <button className="auth-close icon-btn" onClick={onClose}><Icon.close width="18" height="18"/></button>
+        <h2>{isEdit?'Edit brand':'Add brand'}</h2>
+        <p className="sub">{isEdit?brand.name:'New marketplace label'}</p>
+        <form onSubmit={submit}>
+          <div className="field">
+            <label>Cover image</label>
+            <div style={{display:'flex', gap:14, alignItems:'center'}}>
+              <div style={{position:'relative', width:88, height:60, borderRadius:2, overflow:'hidden', flexShrink:0}}>
+                <BrandCoverArt brand={{...f, name: f.name || 'Brand'}}/>
+              </div>
+              <div>
+                <input type="file" accept="image/*" onChange={e=>onImageFile(e.target.files[0])}/>
+                {f.image && <button type="button" className="link-btn" style={{marginTop:6, display:'block'}} onClick={()=>set('image',null)}>Remove image</button>}
+              </div>
+            </div>
+          </div>
+          <div className="field"><label>Name</label><input value={f.name} onChange={e=>set('name',e.target.value)}/></div>
+          <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:14}}>
+            <div className="field">
+              <label>Accent color</label>
+              <input type="color" value={f.color} onChange={e=>set('color',e.target.value)} style={{height:40, padding:2, width:'100%'}}/>
+            </div>
+          </div>
+          <div className="field">
+            <label>Description</label>
+            <textarea rows={3} value={f.desc} onChange={e=>set('desc',e.target.value)} placeholder="A short line about this label…"/>
+          </div>
+          <div style={{display:'flex', gap:10, marginTop:10}}>
+            <button className="btn btn-block" type="submit">{isEdit?'Save changes':'Add brand'}</button>
+            <button className="btn btn-outline btn-block" type="button" onClick={onClose}>Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function AdminOrderRow({ctx, o}){
+  const [showCancel, setShowCancel] = useState(false);
+  const [reason, setReason] = useState('');
+  return (
+    <React.Fragment>
+      <tr>
+        <td>{o.id}</td>
+        <td>{new Date(o.date).toLocaleDateString()}</td>
+        <td>{o.customerName || '—'}</td>
+        <td>{o.items.reduce((s,i)=>s+i.qty,0)}</td>
+        <td className="mono">{fmt(o.total)}</td>
+        <td>
+          <select value={o.status} onChange={e=>{
+            const v = e.target.value;
+            if(v==='Cancelled'){ setShowCancel(true); return; }
+            ctx.updateOrderStatus(o.id, v);
+          }}>
+            {['Processing','Shipped','Delivered','Cancelled'].map(s=><option key={s} value={s}>{s}</option>)}
+          </select>
+        </td>
+        <td>
+          {o.status!=='Cancelled' && <button className="link-btn" onClick={()=>setShowCancel(true)}>Cancel</button>}
+          {o.status==='Cancelled' && o.cancelReason && <span style={{fontSize:11.5, color:'var(--ink-soft)'}}>{o.cancelReason}</span>}
+        </td>
+      </tr>
+      {showCancel && (
+        <tr>
+          <td colSpan="7" style={{background:'var(--porcelain)'}}>
+            <div style={{display:'flex', gap:10, alignItems:'center', padding:'10px 0'}}>
+              <input placeholder="Reason for cancellation" value={reason} onChange={e=>setReason(e.target.value)} style={{flex:1, padding:'10px 12px', border:'1px solid var(--sand-line)', borderRadius:2}}/>
+              <button className="btn btn-sm" onClick={()=>{ ctx.updateOrderStatus(o.id,'Cancelled',reason||'No reason given'); setShowCancel(false); setReason(''); }}>Confirm Cancel</button>
+              <button className="btn btn-ghost btn-sm" onClick={()=>setShowCancel(false)}>Back</button>
+            </div>
+          </td>
+        </tr>
+      )}
+    </React.Fragment>
+  );
+}
+
+function AdminAccountRow({ctx, a}){
+  const [editing, setEditing] = useState(false);
+  const [f, setF] = useState({name:a.name, email:a.email, phone:a.phone});
+  if(editing){
+    return (
+      <tr>
+        <td><input value={f.name} onChange={e=>setF(s=>({...s,name:e.target.value}))} style={{width:'100%', padding:'6px 8px'}}/></td>
+        <td><input value={f.email} onChange={e=>setF(s=>({...s,email:e.target.value}))} style={{width:'100%', padding:'6px 8px'}}/></td>
+        <td><input value={f.phone} onChange={e=>setF(s=>({...s,phone:e.target.value}))} style={{width:'100%', padding:'6px 8px'}}/></td>
+        <td>{a.joined}</td>
+        <td><span className={'status-pill '+(a.status==='banned'?'status-Cancelled':'status-Delivered')}>{a.status}</span></td>
+        <td style={{display:'flex', gap:8}}>
+          <button className="link-btn" onClick={()=>{ ctx.adminUpdateAccount(a.id, f); setEditing(false); }}>Save</button>
+          <button className="link-btn" onClick={()=>setEditing(false)}>Cancel</button>
+        </td>
+      </tr>
+    );
+  }
+  return (
+    <tr>
+      <td>{a.name}</td><td>{a.email}</td><td>{a.phone||'—'}</td><td>{a.joined}</td>
+      <td><span className={'status-pill '+(a.status==='banned'?'status-Cancelled':'status-Delivered')}>{a.status}</span></td>
+      <td style={{display:'flex', gap:8}}>
+        <button className="link-btn" onClick={()=>setEditing(true)}>Edit</button>
+        <button className="link-btn" onClick={()=>ctx.adminToggleBan(a.id)}>{a.status==='banned'?'Unban':'Ban'}</button>
+        <button className="link-btn" onClick={()=>{ if(confirm('Delete this account?')) ctx.adminDeleteAccount(a.id); }}>Delete</button>
+      </td>
+    </tr>
+  );
+}
+
+function AdminDashboard({ctx}){
+  const {orders, accounts, adminAuthed} = ctx;
+  const [tab, setTab] = useState('overview');
+  const [formOpen, setFormOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState(null);
+  const [brandFormOpen, setBrandFormOpen] = useState(false);
+  const [editingBrand, setEditingBrand] = useState(null);
+
+  if(!adminAuthed) return <AdminLoginGate ctx={ctx}/>;
+
+  const totalRevenue = orders.reduce((s,o)=>s+o.total,0);
+  const lowStock = PRODUCTS.filter(p=>p.stock<8);
+
+  return (
+    <div className="wrap section">
+      <div className="section-head">
+        <div><h2>Admin Dashboard</h2><p>Marketplace-wide overview across all brands.</p></div>
+        <button className="btn btn-outline btn-sm" onClick={ctx.handleAdminLogout}>Log out</button>
+      </div>
+      <div className="admin-stat-grid">
+        <div className="stat-card"><div className="v">{orders.length}</div><div className="l">Total Orders</div></div>
+        <div className="stat-card"><div className="v">{PRODUCTS.length}</div><div className="l">Total Products</div></div>
+        <div className="stat-card"><div className="v">{BRAND_DEFS.length}</div><div className="l">Active Brands</div></div>
+        <div className="stat-card"><div className="v">{accounts.length}</div><div className="l">Registered Users</div></div>
+        <div className="stat-card"><div className="v" style={{fontSize:19}}>{fmt(totalRevenue)}</div><div className="l">Total Revenue</div></div>
+        <div className="stat-card"><div className="v">{lowStock.length}</div><div className="l">Low Stock</div></div>
+      </div>
+      <div className="admin-tabs">
+        {['overview','products','brands','orders','accounts'].map(t=>(
+          <button key={t} className={tab===t?'active':''} onClick={()=>setTab(t)} style={{textTransform:'capitalize'}}>{t}</button>
+        ))}
+      </div>
+      {tab==='overview' && (
+        <div>
+          <h3 className="serif" style={{marginBottom:14}}>Low stock products</h3>
+          <div className="table-scroll"><table className="admin-table">
+            <thead><tr><th>Product</th><th>Brand</th><th>Category</th><th>Stock</th></tr></thead>
+            <tbody>{lowStock.map(p=>(<tr key={p.id}><td>{p.name}</td><td>{p.brand}</td><td>{p.category}</td><td>{p.stock}</td></tr>))}</tbody>
+          </table></div>
+        </div>
+      )}
+      {tab==='products' && (
+        <div>
+          <div style={{display:'flex', justifyContent:'flex-end', marginBottom:14}}>
+            <button className="btn btn-sm" onClick={()=>{ setEditingProduct(null); setFormOpen(true); }}>+ Add Product</button>
+          </div>
+          <div className="table-scroll"><table className="admin-table">
+            <thead><tr><th>Product</th><th>Brand</th><th>Category</th><th>Gender</th><th>Price</th><th>Stock</th><th></th></tr></thead>
+            <tbody>
+              {PRODUCTS.map(p=>(
+                <tr key={p.id}>
+                  <td>{p.name}</td><td>{p.brand}</td><td>{p.category}</td>
+                  <td style={{textTransform:'capitalize'}}>{p.gender}</td>
+                  <td className="mono">{fmt(finalPrice(p))}</td><td>{p.stock}</td>
+                  <td style={{display:'flex', gap:8}}>
+                    <button className="link-btn" onClick={()=>{ setEditingProduct(p); setFormOpen(true); }}>Edit</button>
+                    <button className="link-btn" onClick={()=>{ if(confirm('Remove "'+p.name+'"?')) ctx.adminDeleteProduct(p.id); }}>Delete</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table></div>
+        </div>
+      )}
+      {tab==='brands' && (
+        <div>
+          <div style={{display:'flex', justifyContent:'flex-end', marginBottom:14}}>
+            <button className="btn btn-sm" onClick={()=>{ setEditingBrand(null); setBrandFormOpen(true); }}>+ Add Brand</button>
+          </div>
+          <div className="table-scroll"><table className="admin-table">
+            <thead><tr><th>Brand</th><th>Products</th><th>Description</th><th></th></tr></thead>
+            <tbody>
+              {BRAND_DEFS.map(b=>(
+                <tr key={b.id}>
+                  <td>{b.name}</td>
+                  <td>{PRODUCTS.filter(p=>p.brandId===b.id).length}</td>
+                  <td>{b.desc}</td>
+                  <td style={{display:'flex', gap:8}}>
+                    <button className="link-btn" onClick={()=>{ setEditingBrand(b); setBrandFormOpen(true); }}>Edit</button>
+                    <button className="link-btn" onClick={()=>{
+                      const count = PRODUCTS.filter(p=>p.brandId===b.id).length;
+                      const msg = count>0
+                        ? 'Remove "'+b.name+'"? This will also remove its '+count+' product'+(count===1?'':'s')+'.'
+                        : 'Remove "'+b.name+'"?';
+                      if(confirm(msg)) ctx.adminDeleteBrand(b.id);
+                    }}>Delete</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table></div>
+        </div>
+      )}
+      {tab==='orders' && (
+        orders.length===0 ? <p style={{color:'var(--ink-soft)'}}>No orders placed yet in this session.</p> :
+        <div className="table-scroll"><table className="admin-table">
+          <thead><tr><th>Order</th><th>Date</th><th>Customer</th><th>Items</th><th>Total</th><th>Status</th><th></th></tr></thead>
+          <tbody>{orders.map(o=><AdminOrderRow key={o.id} ctx={ctx} o={o}/>)}</tbody>
+        </table></div>
+      )}
+      {tab==='accounts' && (
+        <div className="table-scroll"><table className="admin-table">
+          <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Joined</th><th>Status</th><th></th></tr></thead>
+          <tbody>{accounts.map(a=><AdminAccountRow key={a.id} ctx={ctx} a={a}/>)}</tbody>
+        </table></div>
+      )}
+      {formOpen && <AdminProductForm ctx={ctx} product={editingProduct} onClose={()=>setFormOpen(false)}/>}
+      {brandFormOpen && <AdminBrandForm ctx={ctx} brand={editingBrand} onClose={()=>setBrandFormOpen(false)}/>}
+    </div>
+  );
+}
+
+function catalogSummary(){
+  return PRODUCTS.map(p=>({
+    id:p.id, brand:p.brand, name:p.name, gender:p.gender, category:p.category,
+    price:finalPrice(p), colors:p.colors.map(c=>c.name), tags:p.tags,
+  }));
+}
+
+function runLocalFilter(params){
+  params = params || {};
+  return PRODUCTS.filter(p=>{
+    if(params.gender && params.gender!=='any' && p.gender!==params.gender) return false;
+    if(params.category && p.category.toLowerCase()!==String(params.category).toLowerCase()) return false;
+    if(params.brand && p.brand.toLowerCase()!==String(params.brand).toLowerCase()) return false;
+    if(params.color && !p.colors.some(c=>c.name.toLowerCase()===String(params.color).toLowerCase())) return false;
+    if(params.maxPrice && finalPrice(p)>params.maxPrice) return false;
+    if(params.minPrice && finalPrice(p)<params.minPrice) return false;
+    if(params.tag && !p.tags.includes(params.tag)) return false;
+    if(params.query){
+      const q = String(params.query).toLowerCase();
+      if(!(p.name+p.brand+p.category+p.desc).toLowerCase().includes(q)) return false;
+    }
+    return true;
+  }).slice(0,6);
+}
+
+function AiAssistant({ctx}){
+  const {aiOpen, setAiOpen, route, user, orders, cart, goTo, addresses, requireAuth} = ctx;
+  const [messages, setMessages] = useState([
+    {role:'bot', text:"Hi! I'm your M3RAFSH shopping assistant. What are you looking for today?", chips:['Find a product','Explore categories','Find a brand','Track an order']},
+  ]);
+  const [input, setInput] = useState('');
+  const [busy, setBusy] = useState(false);
+  const bodyRef = useRef(null);
+
+  useEffect(()=>{ if(bodyRef.current) bodyRef.current.scrollTop = bodyRef.current.scrollHeight; },[messages, busy]);
+
+  function currentContext(){
+    const c = {page: route.page, authenticated: !!user};
+    if(route.page==='product'){
+      const p = PRODUCTS.find(x=>x.id===route.params.id);
+      if(p) c.currentProduct = {id:p.id, name:p.name, brand:p.brand, category:p.category, price:finalPrice(p), gender:p.gender};
+    }
+    if(route.page==='category' || route.page==='shop') c.currentFilters = route.params;
+    c.cartItemCount = cart.filter(l=>!l.savedForLater).reduce((s,l)=>s+l.qty,0);
+    return c;
+  }
+
+  function executeAction(action){
+    if(!action || action.type==='none') return;
+    const needsAuth = ['open_orders','open_wishlist','open_profile','track_order'].includes(action.type);
+    if(needsAuth && !user){
+      setMessages(m=>[...m,{role:'bot', text:"You'll need to log in to see that — I've opened the login screen for you."}]);
+      requireAuth('dashboard',{});
+      return;
+    }
+    const params = action.params || {};
+    switch(action.type){
+      case 'open_product': goTo('product',{id:params.id}); break;
+      case 'open_category': goTo('category', {gender:params.gender}); break;
+      case 'search_products': goTo('shop', params); break;
+      case 'open_brand': {
+        const b = BRAND_DEFS.find(x=>x.name.toLowerCase()===String(params.brand||'').toLowerCase() || x.id===params.brandId);
+        if(b) goTo('brand',{id:b.id});
+        break;
+      }
+      case 'open_cart': ctx.setCartOpen(true); break;
+      case 'open_orders': goTo('dashboard-orders',{}); break;
+      case 'open_wishlist': goTo('dashboard-saved',{}); break;
+      case 'open_profile': goTo('dashboard',{}); break;
+      case 'track_order': goTo('dashboard-orders',{}); break;
+      default: break;
+    }
+  }
+
+  async function callAssistant(userText){
+    const ctxObj = currentContext();
+    const ordersSummary = user ? orders.slice(0,5).map(o=>({id:o.id, status:o.status, total:o.total, itemCount:o.items.reduce((s,i)=>s+i.qty,0)})) : [];
+    const system = `You are the site-aware shopping assistant for M3RAFSH, a multi-brand local fashion marketplace.
+You are given the FULL product catalog and the shopper's current context below. Never invent products, brands, categories, ids or prices that are not in the catalog.
+Respond to the shopper's message and answer ONLY with strict JSON, no markdown, no code fences, matching exactly this schema:
+{"reply": string, "product_ids": string[], "action": {"type": "search_products"|"open_product"|"open_category"|"open_brand"|"open_cart"|"open_orders"|"open_wishlist"|"open_profile"|"track_order"|"none", "params": object}}
+Rules:
+- "reply" is a short, warm, helpful natural-language answer (max ~2 sentences).
+- "product_ids" is up to 4 ids taken EXACTLY from the catalog's "id" field, only when products are genuinely relevant to show.
+- If the shopper is on a product page and asks a relative question like "something cheaper" or "similar to this", use currentProduct as the reference point (same category/gender, lower price, etc).
+- If the shopper asks about their cart/orders/wishlist/profile and is not authenticated, still set the appropriate action type (the app will prompt login).
+- "action.type" "open_category" needs params {"gender":"men"|"women"|"unisex"}. "search_products" needs params among {gender,category,color,maxPrice,minPrice,tag,query}. "open_brand" needs params {"brand": brandName}. "open_product" needs {"id": productId}.
+- Use "none" action when just answering a question with no navigation, e.g. comparing two products.
+- Keep it grounded only in the catalog and context data given below.
+
+CATALOG (condensed): ${JSON.stringify(catalogSummary())}
+CONTEXT: ${JSON.stringify(ctxObj)}
+RECENT ORDERS (if authenticated): ${JSON.stringify(ordersSummary)}`;
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(()=>controller.abort(), ASSISTANT_TIMEOUT_MS);
+    try{
+      const response = await fetch(ASSISTANT_API_URL, {
+        method:"POST",
+        headers:{
+          "Content-Type":"application/json",
+          "Authorization":"Bearer "+ASSISTANT_API_KEY,
+        },
+        signal: controller.signal,
+        body: JSON.stringify({
+          model: ASSISTANT_MODEL,
+          messages:[
+            {role:"system", content: system},
+            {role:"user", content: userText},
+          ],
+        })
+      });
+      clearTimeout(timeoutId);
+      if(!response.ok){
+        throw new Error("Assistant API returned "+response.status);
+      }
+      const data = await response.json();
+      let raw = data?.choices?.[0]?.message?.content || '{}';
+      raw = raw.trim().replace(/^```json/,'').replace(/^```/,'').replace(/```$/,'').trim();
+      let parsed;
+      try{ parsed = JSON.parse(raw); }
+      catch(e){ parsed = {reply: raw || "Sorry, I couldn't quite parse that — could you try rephrasing?", product_ids:[], action:{type:'none'}}; }
+      return parsed;
+    }catch(e){
+      clearTimeout(timeoutId);
+      const fallbackResults = runLocalFilter({query:userText});
+      return {
+        reply: fallbackResults.length ? "I couldn't reach the assistant service, but here's what I found by keyword in the catalog:" : "Sorry, I couldn't reach the assistant right now. Try browsing the shop instead.",
+        product_ids: fallbackResults.map(p=>p.id),
+        action: {type:'none'},
+      };
+    }
+  }
+
+  async function send(text){
+    const t = (text||input).trim();
+    if(!t || busy) return;
+    setMessages(m=>[...m, {role:'user', text:t}]);
+    setInput('');
+    setBusy(true);
+    const result = await callAssistant(t);
+    setBusy(false);
+    const ids = Array.isArray(result.product_ids) ? result.product_ids : [];
+    const products = ids.map(id=>PRODUCTS.find(p=>p.id===id)).filter(Boolean);
+    setMessages(m=>[...m, {role:'bot', text: result.reply || '...', products, action: result.action}]);
+  }
+
+  function handleChip(label){
+    const map = {
+      'Find a product':'Show me something new I might like.',
+      'Explore categories':"What categories are on the marketplace?",
+      'Find a brand':'Tell me about the brands on M3RAFSH.',
+      'Track an order':'Track my latest order.',
+    };
+    send(map[label] || label);
+  }
+
+  return (
+    <React.Fragment>
+      <button className="ai-fab" onClick={()=>setAiOpen(v=>!v)} aria-label="Shop Assistant">
+        {aiOpen ? <Icon.close width="22" height="22"/> : <Icon.spark width="24" height="24"/>}
+      </button>
+      {aiOpen && (
+        <div className="ai-panel">
+          <div className="ai-head">
+            <div className="t"><Icon.spark width="16" height="16"/> Shop Assistant</div>
+            <button className="icon-btn" style={{color:'#fff'}} onClick={()=>setAiOpen(false)}><Icon.close width="18" height="18"/></button>
+          </div>
+          <div className="ai-body" ref={bodyRef}>
+            {messages.map((m,i)=>(
+              <React.Fragment key={i}>
+                <div className={'ai-msg '+m.role}>{m.text}</div>
+                {m.products && m.products.length>0 && (
+                  <div className="ai-prod-strip">
+                    {m.products.map(p=>(
+                      <div key={p.id} className="ai-prod-card" onClick={()=>{ ctx.recordView(p.id); goTo('product',{id:p.id}); setAiOpen(false); }}>
+                        <div className="m"><GarmentArt category={p.category} image={p.image}/></div>
+                        <div className="n">{p.name}</div>
+                        <div className="p">{fmt(finalPrice(p))}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {m.action && m.action.type && m.action.type!=='none' && (
+                  <button className="ai-action-btn" onClick={()=>executeAction(m.action)}>
+                    {({
+                      search_products:'View Results',
+                      open_product:'Open Product',
+                      open_category:'Open Category',
+                      open_brand:'Open Brand',
+                      open_cart:'Open Cart',
+                      open_orders:'View Orders',
+                      open_wishlist:'View Saved Items',
+                      open_profile:'Open Profile',
+                      track_order:'Track Order',
+                    })[m.action.type] || 'Open'}
+                  </button>
+                )}
+                {m.chips && (
+                  <div className="ai-chips">
+                    {m.chips.map(c=> <button key={c} className="ai-chip" onClick={()=>handleChip(c)}>{c}</button>)}
+                  </div>
+                )}
+              </React.Fragment>
+            ))}
+            {busy && <div className="ai-msg bot"><div className="typing-dots"><span/><span/><span/></div></div>}
+          </div>
+          <div className="ai-input-row">
+            <input placeholder="Ask anything…" value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>{ if(e.key==='Enter') send(); }} disabled={busy}/>
+            <button onClick={()=>send()} disabled={busy || !input.trim()} aria-label="Send"><Icon.send width="16" height="16"/></button>
+          </div>
+        </div>
+      )}
+    </React.Fragment>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App/>);
+</script>
+</body>
+</html>
