@@ -1,5 +1,0 @@
-{
-  "url": "https://api.routeway.ai/v1/chat/completions",
-  "apiKey": "sk-uLNAKIR3AeTtjlndgTMif4LFR0_emTdWbeJ2BuXcOrmo3AYTf0JJnVu_y-4P2t28nTaK4GYj8V38DEeXBUQzmEsVtEzQqg",
-  "model": "nemotron-3-nano-30b-a3b:free"
-}
