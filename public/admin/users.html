@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Users — M3RAFSH Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/css/admin.css">
+</head>
+<body class="admin-body">
+<div class="admin-shell">
+  <div id="admin-sidebar-slot"></div>
+  <main class="admin-main">
+    <div class="admin-topbar">
+      <h1>Users</h1>
+      <button class="btn btn-primary btn-sm" id="add-btn">+ Add Brand Admin</button>
+    </div>
+    <div class="admin-table-wrap">
+      <table class="admin-table">
+        <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Role</th><th>Brand</th><th>Joined</th><th></th></tr></thead>
+        <tbody id="table-body"><tr><td colspan="7">Loading...</td></tr></tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<div class="modal-backdrop" id="user-modal">
+  <div class="modal-box">
+    <button class="modal-close-x" id="modal-close">✕</button>
+    <h3 id="modal-title">Add Brand Admin</h3>
+    <input type="hidden" id="edit-id">
+    <p class="text-soft" style="font-size:12.5px;margin-bottom:16px">Brand admins can only manage their own brand's products and view orders containing that brand's items.</p>
+    <div id="new-user-fields">
+      <div class="field-row">
+        <div class="field"><label>Full Name</label><input id="f-name"></div>
+        <div class="field"><label>Email</label><input type="email" id="f-email"></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Password</label><input type="password" id="f-password" minlength="6"></div>
+        <div class="field"><label>Phone (optional)</label><input id="f-phone"></div>
+      </div>
+    </div>
+    <div class="field">
+      <label>Role</label>
+      <select id="f-role">
+        <option value="brand_admin">Brand Admin</option>
+        <option value="admin">Owner (full access)</option>
+      </select>
+    </div>
+    <div class="field" id="brand-field">
+      <label>Brand</label>
+      <select id="f-brand"></select>
+    </div>
+    <button class="btn btn-primary btn-block" id="save-btn">Save</button>
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script src="/js/admin.js"></script>
+<script>
+let users = [], brands = [];
+
+function toggleBrandField() {
+  document.getElementById('brand-field').style.display = document.getElementById('f-role').value === 'brand_admin' ? '' : 'none';
+}
+document.getElementById('f-role').addEventListener('change', toggleBrandField);
+
+async function openAddModal() {
+  document.getElementById('modal-title').textContent = 'Add Brand Admin';
+  document.getElementById('edit-id').value = '';
+  document.getElementById('new-user-fields').style.display = '';
+  document.getElementById('f-name').value = '';
+  document.getElementById('f-email').value = '';
+  document.getElementById('f-password').value = '';
+  document.getElementById('f-phone').value = '';
+  document.getElementById('f-role').value = 'brand_admin';
+  document.getElementById('f-brand').innerHTML = brands.length
+    ? brands.map(b => `<option value="${b.id}">${escapeHTML(b.name)}</option>`).join('')
+    : '<option value="">Add a brand first</option>';
+  toggleBrandField();
+  document.getElementById('user-modal').classList.add('open');
+}
+
+function openEditModal(u) {
+  document.getElementById('modal-title').textContent = 'Edit Role — ' + u.name;
+  document.getElementById('edit-id').value = u.id;
+  document.getElementById('new-user-fields').style.display = 'none';
+  document.getElementById('f-role').value = u.role === 'user' ? 'brand_admin' : u.role;
+  document.getElementById('f-brand').innerHTML = brands.length
+    ? brands.map(b => `<option value="${b.id}" ${b.id === u.brand_id ? 'selected' : ''}>${escapeHTML(b.name)}</option>`).join('')
+    : '<option value="">Add a brand first</option>';
+  toggleBrandField();
+  document.getElementById('user-modal').classList.add('open');
+}
+
+document.getElementById('add-btn').addEventListener('click', openAddModal);
+document.getElementById('modal-close').addEventListener('click', () => document.getElementById('user-modal').classList.remove('open'));
+
+document.getElementById('save-btn').addEventListener('click', async () => {
+  const id = document.getElementById('edit-id').value;
+  const role = document.getElementById('f-role').value;
+  const brandId = document.getElementById('f-brand').value || null;
+
+  try {
+    if (id) {
+      await API.put('/api/admin/users/' + id, { role, brand_id: brandId ? Number(brandId) : null });
+      Toast.show('User updated.');
+    } else {
+      const name = document.getElementById('f-name').value;
+      const email = document.getElementById('f-email').value;
+      const password = document.getElementById('f-password').value;
+      if (!name || !email || !password) { Toast.show('Name, email and password are required.'); return; }
+      if (role === 'brand_admin' && !brandId) { Toast.show('Please select a brand.'); return; }
+      await API.post('/api/admin/users', { name, email, password, phone: document.getElementById('f-phone').value, role, brand_id: brandId ? Number(brandId) : null });
+      Toast.show('Brand admin created.');
+    }
+    document.getElementById('user-modal').classList.remove('open');
+    load();
+  } catch (e) { Toast.show(e.message); }
+});
+
+function render() {
+  document.getElementById('table-body').innerHTML = users.length ? users.map(u => `
+    <tr>
+      <td>${escapeHTML(u.name)}</td>
+      <td>${escapeHTML(u.email)}</td>
+      <td class="text-soft">${escapeHTML(u.phone || '—')}</td>
+      <td><span class="status-pill ${u.role === 'admin' ? 'Delivered' : ''}">${u.role === 'admin' ? 'Owner' : u.role === 'brand_admin' ? 'Brand Admin' : 'Customer'}</span></td>
+      <td class="text-soft">${u.brand_name ? escapeHTML(u.brand_name) : '—'}</td>
+      <td>${new Date(u.created_at).toLocaleDateString()}</td>
+      <td>${u.role !== 'user' ? `<button class="table-action-btn js-edit" data-id="${u.id}">Edit</button><button class="table-action-btn danger js-delete" data-id="${u.id}">Delete</button>` : ''}</td>
+    </tr>`).join('') : `<tr><td colspan="7">No users yet.</td></tr>`;
+
+  document.querySelectorAll('.js-edit').forEach(b => b.addEventListener('click', () => openEditModal(users.find(u => u.id == b.dataset.id))));
+  document.querySelectorAll('.js-delete').forEach(b => b.addEventListener('click', async () => {
+    if (!confirm('Remove this admin account? They will no longer be able to log in to the admin dashboard.')) return;
+    try { await API.del('/api/admin/users/' + b.dataset.id); Toast.show('User removed.'); load(); }
+    catch (e) { Toast.show(e.message); }
+  }));
+}
+
+async function load() {
+  const user = await adminGuard('users');
+  if (!user) return;
+  const [{ users: u }, { brands: b }] = await Promise.all([API.get('/api/admin/users'), API.get('/api/admin/brands')]);
+  users = u; brands = b;
+  render();
+}
+load();
+</script>
+</body>
+</html>

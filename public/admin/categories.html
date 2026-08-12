@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manage Categories — M3RAFSH Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/css/admin.css">
+</head>
+<body class="admin-body">
+<div class="admin-shell">
+  <div id="admin-sidebar-slot"></div>
+  <main class="admin-main">
+    <div class="admin-topbar">
+      <h1>Categories</h1>
+      <button class="btn btn-primary btn-sm" id="add-btn">+ Add Category</button>
+    </div>
+    <div class="admin-table-wrap">
+      <table class="admin-table">
+        <thead><tr><th>Name</th><th>Slug</th><th>Parent</th><th></th></tr></thead>
+        <tbody id="table-body"><tr><td colspan="4">Loading...</td></tr></tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<div class="modal-backdrop" id="cat-modal">
+  <div class="modal-box">
+    <button class="modal-close-x" id="modal-close">✕</button>
+    <h3 id="modal-title">Add Category</h3>
+    <input type="hidden" id="edit-id">
+    <div class="field"><label>Name</label><input id="f-name"></div>
+    <div class="field"><label>Slug (auto-generated if empty)</label><input id="f-slug"></div>
+    <div class="field"><label>Parent Category (optional — leave blank for top-level)</label>
+      <select id="f-parent"><option value="">— Top level —</option></select>
+    </div>
+    <button class="btn btn-primary btn-block" id="save-btn">Save Category</button>
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script src="/js/admin.js"></script>
+<script>
+let categories = [];
+
+function openModal(cat) {
+  document.getElementById('modal-title').textContent = cat ? 'Edit Category' : 'Add Category';
+  document.getElementById('edit-id').value = cat ? cat.id : '';
+  document.getElementById('f-name').value = cat ? cat.name : '';
+  document.getElementById('f-slug').value = cat ? cat.slug : '';
+  const sel = document.getElementById('f-parent');
+  sel.innerHTML = '<option value="">— Top level —</option>' + categories
+    .filter(c => !c.parent_id && (!cat || c.id !== cat.id))
+    .map(c => `<option value="${c.id}" ${cat && cat.parent_id === c.id ? 'selected' : ''}>${c.name}</option>`).join('');
+  document.getElementById('cat-modal').classList.add('open');
+}
+document.getElementById('add-btn').addEventListener('click', () => openModal(null));
+document.getElementById('modal-close').addEventListener('click', () => document.getElementById('cat-modal').classList.remove('open'));
+
+document.getElementById('save-btn').addEventListener('click', async () => {
+  const id = document.getElementById('edit-id').value;
+  const name = document.getElementById('f-name').value;
+  if (!name) { Toast.show('Category name is required.'); return; }
+  const payload = {
+    name, slug: document.getElementById('f-slug').value,
+    parent_id: document.getElementById('f-parent').value || null,
+  };
+  try {
+    if (id) await API.put('/api/admin/categories/' + id, payload);
+    else await API.post('/api/admin/categories', payload);
+    document.getElementById('cat-modal').classList.remove('open');
+    Toast.show('Category saved.');
+    load();
+  } catch (e) { Toast.show(e.message); }
+});
+
+function render() {
+  const body = document.getElementById('table-body');
+  const byId = Object.fromEntries(categories.map(c => [c.id, c]));
+  body.innerHTML = categories.length ? categories.map(c => `
+    <tr>
+      <td>${escapeHTML(c.name)}</td>
+      <td class="text-soft">${c.slug}</td>
+      <td>${c.parent_id ? escapeHTML((byId[c.parent_id] || {}).name || '') : '<span class="text-soft">Top level</span>'}</td>
+      <td><button class="table-action-btn js-edit" data-id="${c.id}">Edit</button><button class="table-action-btn danger js-delete" data-id="${c.id}">Delete</button></td>
+    </tr>`).join('') : `<tr><td colspan="4">No categories yet.</td></tr>`;
+  body.querySelectorAll('.js-edit').forEach(btn => btn.addEventListener('click', () => openModal(categories.find(c => c.id == btn.dataset.id))));
+  body.querySelectorAll('.js-delete').forEach(btn => btn.addEventListener('click', async () => {
+    if (!confirm('Delete this category? Subcategories and products referencing it may be affected.')) return;
+    await API.del('/api/admin/categories/' + btn.dataset.id);
+    Toast.show('Category deleted.');
+    load();
+  }));
+}
+
+async function load() {
+  const user = await adminGuard('categories');
+  if (!user) return;
+  const { categories: c } = await API.get('/api/admin/categories');
+  categories = c;
+  render();
+}
+load();
+</script>
+</body>
+</html>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Order Confirmed — M3RAFSH</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body data-page="order-confirmation">
+<div id="site-header-slot"></div>
+
+<div class="container">
+  <div class="confirmation-box">
+    <div class="confirmation-icon">
+      <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+    </div>
+    <h1>Order Confirmed</h1>
+    <p>Thank you for your purchase.</p>
+    <p style="font-weight:700;font-size:18px;margin-top:10px" id="order-num"></p>
+    <div class="confirmation-actions">
+      <a href="#" class="btn btn-primary" id="view-order-btn">View Order</a>
+      <a href="/shop.html" class="btn btn-secondary">Continue Shopping</a>
+    </div>
+  </div>
+</div>
+
+<div id="site-footer-slot"></div>
+<script src="/js/api.js"></script>
+<script src="/js/placeholder.js"></script>
+<script src="/js/main.js"></script>
+<script>
+const params = new URLSearchParams(location.search);
+const orderId = params.get('order');
+const orderNum = params.get('num');
+document.getElementById('order-num').textContent = orderNum ? `Order #${orderNum}` : '';
+document.getElementById('view-order-btn').href = orderId ? '/order-detail.html?id=' + orderId : '/orders.html';
+</script>
+</body>
+</html>

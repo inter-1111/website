@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Payment Methods — M3RAFSH</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body data-page="payment-methods">
+<div id="site-header-slot"></div>
+
+<div class="container dash-layout">
+  <div id="dash-nav-slot"></div>
+  <div>
+    <div class="flex justify-between items-center">
+      <div><h1 class="dash-welcome">Payment Methods</h1><p class="dash-sub">Manage your saved payment methods.</p></div>
+      <button class="btn btn-primary btn-sm" id="add-btn">+ Add Payment Method</button>
+    </div>
+    <div id="payment-list" style="max-width:520px"><div class="spinner"></div></div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="pm-modal">
+  <div class="modal-box">
+    <button class="modal-close-x" id="modal-close">✕</button>
+    <h3>Add Payment Method</h3>
+    <p class="text-soft" style="font-size:12.5px;margin-bottom:16px">Demo only — no real payment is processed. We never store your full card number.</p>
+    <div class="field"><label>Card Number</label><input id="cc-number" placeholder="4242 4242 4242 4242" maxlength="19"></div>
+    <div class="field-row">
+      <div class="field"><label>Expiry</label><input id="cc-expiry" placeholder="MM/YY" maxlength="5"></div>
+      <div class="field"><label>CVV</label><input id="cc-cvv" placeholder="123" maxlength="4"></div>
+    </div>
+    <label class="checkbox-row" style="margin-bottom:18px"><input type="checkbox" id="cc-default"> Set as default</label>
+    <button class="btn btn-primary btn-block" id="save-btn">Save Card</button>
+  </div>
+</div>
+
+<div id="site-footer-slot"></div>
+<script src="/js/api.js"></script>
+<script src="/js/placeholder.js"></script>
+<script src="/js/main.js"></script>
+<script>
+document.getElementById('add-btn').addEventListener('click', () => document.getElementById('pm-modal').classList.add('open'));
+document.getElementById('modal-close').addEventListener('click', () => document.getElementById('pm-modal').classList.remove('open'));
+
+document.getElementById('save-btn').addEventListener('click', async () => {
+  const num = document.getElementById('cc-number').value.replace(/\s+/g, '');
+  if (num.length < 12) { Toast.show('Please enter a valid card number.'); return; }
+  await API.post('/api/payment-methods', { card_number: num, expiry: document.getElementById('cc-expiry').value, is_default: document.getElementById('cc-default').checked });
+  document.getElementById('pm-modal').classList.remove('open');
+  Toast.show('Payment method added.');
+  load();
+});
+
+function render(methods) {
+  const list = document.getElementById('payment-list');
+  list.innerHTML = methods.length ? methods.map(pm => `
+    <div class="payment-card">
+      <div class="flex justify-between items-center">
+        <div style="font-weight:700">${pm.brand} •••• ${pm.last4}</div>
+        ${pm.is_default ? '<span class="default-badge">Default</span>' : ''}
+      </div>
+      <div class="text-soft" style="font-size:13px;margin-top:4px">Expires ${pm.expiry || '—'}</div>
+      <div class="card-actions-row"><button class="js-delete" data-id="${pm.id}">Remove</button></div>
+    </div>`).join('') : `<div class="empty-state"><h3>No payment methods saved</h3><p>Add a card to speed up checkout.</p></div>`;
+
+  list.querySelectorAll('.js-delete').forEach(b => b.addEventListener('click', async () => {
+    await API.del('/api/payment-methods/' + b.dataset.id); Toast.show('Payment method removed.'); load();
+  }));
+}
+
+async function load() {
+  if (!requireAuthOrRedirect()) return;
+  document.getElementById('dash-nav-slot').innerHTML = dashNavHTML('payments');
+  initDashLogout();
+  const { payment_methods } = await API.get('/api/payment-methods');
+  render(payment_methods);
+}
+document.addEventListener('chrome:ready', load);
+</script>
+</body>
+</html>

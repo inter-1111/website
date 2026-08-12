@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>M3RAFSH — Modest Wear Marketplace</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body data-page="home">
+<div id="site-header-slot"></div>
+
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-content">
+    <div class="hero-eyebrow">Modest Wear · Local · Curated</div>
+    <h1>Modest Fashion, Made Local</h1>
+    <p>Modest wear from independent local brands, all in one place. Abayas, dresses, hijabs and more from the makers behind your city's style.</p>
+    <div class="hero-actions">
+      <a href="/shop.html" class="btn btn-primary">Shop Now</a>
+      <a href="/brands.html" class="btn btn-secondary">Explore Brands</a>
+    </div>
+  </div>
+</section>
+
+<section class="section-tight">
+  <div class="container">
+    <div class="section-head">
+      <h2>Shop by Category</h2>
+    </div>
+    <div class="category-grid" id="category-grid"></div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-head">
+      <div><h2>New Arrivals</h2><p>Fresh drops from local brands</p></div>
+      <a href="/shop.html?filter=new" class="section-link">View All</a>
+    </div>
+    <div class="product-grid" id="new-arrivals-grid"><div class="spinner"></div></div>
+  </div>
+</section>
+
+<section class="section-tight" style="background:var(--color-surface);border-top:1px solid var(--color-line);border-bottom:1px solid var(--color-line)">
+  <div class="container">
+    <div class="section-head">
+      <div><h2>Featured Brands</h2><p>Meet the independent labels on M3RAFSH</p></div>
+      <a href="/brands.html" class="section-link">View All</a>
+    </div>
+    <div class="brand-grid" id="featured-brands-grid"><div class="spinner"></div></div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-head">
+      <div><h2>Trending Now</h2><p>What everyone's adding to cart</p></div>
+      <a href="/shop.html?sort=popular" class="section-link">View All</a>
+    </div>
+    <div class="product-grid" id="trending-grid"><div class="spinner"></div></div>
+  </div>
+</section>
+
+<section class="section-tight">
+  <div class="container">
+    <div class="promo-banner">
+      <div>
+        <h3>The Autumn Collection</h3>
+        <p>Layered knitwear, structured outerwear, and warm neutrals from brands you'll want to know.</p>
+      </div>
+      <a href="/shop.html?filter=new" class="btn btn-primary">Shop the Edit</a>
+    </div>
+  </div>
+</section>
+
+<section class="newsletter-section">
+  <div class="container">
+    <h2>Stay in the loop</h2>
+    <p>New brands, new collections, promotions and releases — straight to your inbox.</p>
+    <form class="newsletter-form" onsubmit="event.preventDefault(); Toast.show('Thanks for subscribing!'); this.reset();">
+      <input type="email" placeholder="Your email address" required>
+      <button class="btn btn-primary" type="submit">Subscribe</button>
+    </form>
+  </div>
+</section>
+
+<div id="site-footer-slot"></div>
+
+<script src="/js/api.js"></script>
+<script src="/js/placeholder.js"></script>
+<script src="/js/main.js"></script>
+<script>
+async function loadCategoryGrid() {
+  const { categories } = await API.get('/api/categories');
+  const grid = document.getElementById('category-grid');
+  grid.innerHTML = categories.map(c => `
+    <a href="/shop.html?category=${c.slug}" class="category-card">
+      <img class="cat-bg" src="${Placeholder.categoryImage(c.slug, c.name)}" alt="${c.name}">
+      <span class="cat-label">${c.name}</span>
+    </a>`).join('');
+}
+
+async function loadHomepage() {
+  try {
+    await loadCategoryGrid();
+    const [{ products: newArrivals }, { products: trending }, { brands }] = await Promise.all([
+      API.get('/api/products?sort=newest&limit=8'),
+      API.get('/api/products?trending=1&limit=8'),
+      API.get('/api/brands'),
+    ]);
+
+    const newGrid = document.getElementById('new-arrivals-grid');
+    newGrid.innerHTML = newArrivals.length ? newArrivals.map(productCardHTML).join('') :
+      `<div class="empty-state" style="grid-column:1/-1"><h3>No products yet</h3><p>The catalog is still being set up — check back soon.</p></div>`;
+
+    const trendGrid = document.getElementById('trending-grid');
+    let trendItems = trending;
+    if (!trendItems.length) { const r = await API.get('/api/products?sort=featured&limit=8'); trendItems = r.products; }
+    trendGrid.innerHTML = trendItems.length ? trendItems.map(productCardHTML).join('') :
+      `<div class="empty-state" style="grid-column:1/-1"><h3>No products yet</h3><p>The catalog is still being set up — check back soon.</p></div>`;
+
+    const brandGrid = document.getElementById('featured-brands-grid');
+    const featured = brands.slice(0, 3);
+    brandGrid.innerHTML = featured.length ? featured.map(b => `
+      <a href="/brand.html?slug=${b.slug}" class="brand-card">
+        <div class="brand-cover"><img src="${b.cover_url || Placeholder.brandCover(b.slug, b.name)}" alt="${b.name}"></div>
+        <div class="brand-card-body">
+          <img class="brand-logo" src="${b.logo_url || Placeholder.brandLogo(b.slug, b.name)}" alt="">
+          <h3>${b.name}</h3>
+          <p>${b.description || 'An independent local fashion label.'}</p>
+          <span class="btn btn-secondary btn-sm">Shop Brand</span>
+        </div>
+      </a>`).join('') :
+      `<div class="empty-state" style="grid-column:1/-1"><h3>No brands yet</h3><p>Local brands will appear here once an admin adds them.</p></div>`;
+  } catch (e) { console.error(e); }
+}
+loadHomepage();
+</script>
+</body>
+</html>

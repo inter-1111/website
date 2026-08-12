@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manage Brands — M3RAFSH Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/css/admin.css">
+</head>
+<body class="admin-body">
+<div class="admin-shell">
+  <div id="admin-sidebar-slot"></div>
+  <main class="admin-main">
+    <div class="admin-topbar">
+      <h1>Brands</h1>
+      <button class="btn btn-primary btn-sm" id="add-btn">+ Add Brand</button>
+    </div>
+    <div class="admin-table-wrap">
+      <table class="admin-table">
+        <thead><tr><th></th><th>Name</th><th>Slug</th><th>Products</th><th>Created</th><th></th></tr></thead>
+        <tbody id="table-body"><tr><td colspan="6">Loading...</td></tr></tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<div class="modal-backdrop" id="brand-modal">
+  <div class="modal-box">
+    <button class="modal-close-x" id="modal-close">✕</button>
+    <h3 id="modal-title">Add Brand</h3>
+    <input type="hidden" id="edit-id">
+    <div class="field"><label>Brand Name</label><input id="f-name"></div>
+    <div class="field"><label>Slug (auto-generated if empty)</label><input id="f-slug"></div>
+    <div class="field"><label>Description</label><textarea id="f-desc" rows="3"></textarea></div>
+    <div class="field"><label>Logo URL</label><input id="f-logo" placeholder="https://..."></div>
+    <div class="field"><label>Cover Image URL</label><input id="f-cover" placeholder="https://..."></div>
+    <button class="btn btn-primary btn-block" id="save-btn">Save Brand</button>
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script src="/js/placeholder.js"></script>
+<script src="/js/admin.js"></script>
+<script>
+function formatPrice(n) { return '$' + Number(n).toFixed(2).replace(/\.00$/, ''); }
+let brands = [];
+
+function openModal(b) {
+  document.getElementById('modal-title').textContent = b ? 'Edit Brand' : 'Add Brand';
+  document.getElementById('edit-id').value = b ? b.id : '';
+  document.getElementById('f-name').value = b ? b.name : '';
+  document.getElementById('f-slug').value = b ? b.slug : '';
+  document.getElementById('f-desc').value = b ? b.description : '';
+  document.getElementById('f-logo').value = b ? b.logo_url : '';
+  document.getElementById('f-cover').value = b ? b.cover_url : '';
+  document.getElementById('brand-modal').classList.add('open');
+}
+document.getElementById('add-btn').addEventListener('click', () => openModal(null));
+document.getElementById('modal-close').addEventListener('click', () => document.getElementById('brand-modal').classList.remove('open'));
+
+document.getElementById('save-btn').addEventListener('click', async () => {
+  const id = document.getElementById('edit-id').value;
+  const payload = {
+    name: document.getElementById('f-name').value,
+    slug: document.getElementById('f-slug').value,
+    description: document.getElementById('f-desc').value,
+    logo_url: document.getElementById('f-logo').value,
+    cover_url: document.getElementById('f-cover').value,
+  };
+  if (!payload.name) { Toast.show('Brand name is required.'); return; }
+  try {
+    if (id) await API.put('/api/admin/brands/' + id, payload);
+    else await API.post('/api/admin/brands', payload);
+    document.getElementById('brand-modal').classList.remove('open');
+    Toast.show('Brand saved.');
+    load();
+  } catch (e) { Toast.show(e.message); }
+});
+
+function render() {
+  const body = document.getElementById('table-body');
+  body.innerHTML = brands.length ? brands.map(b => `
+    <tr>
+      <td><img class="thumb" style="border-radius:50%;width:36px;height:36px" src="${b.logo_url || Placeholder.brandLogo(b.slug, b.name)}"></td>
+      <td>${escapeHTML(b.name)}</td>
+      <td class="text-soft">${b.slug}</td>
+      <td>${b.product_count ?? '—'}</td>
+      <td>${new Date(b.created_at).toLocaleDateString()}</td>
+      <td>
+        <button class="table-action-btn js-edit" data-id="${b.id}">Edit</button>
+        <button class="table-action-btn danger js-delete" data-id="${b.id}">Delete</button>
+      </td>
+    </tr>`).join('') : `<tr><td colspan="6">No brands yet. Add your first local brand to get started.</td></tr>`;
+
+  body.querySelectorAll('.js-edit').forEach(btn => btn.addEventListener('click', () => openModal(brands.find(b => b.id == btn.dataset.id))));
+  body.querySelectorAll('.js-delete').forEach(btn => btn.addEventListener('click', async () => {
+    if (!confirm('Delete this brand and all its products?')) return;
+    await API.del('/api/admin/brands/' + btn.dataset.id);
+    Toast.show('Brand deleted.');
+    load();
+  }));
+}
+
+async function load() {
+  const user = await adminGuard('brands');
+  if (!user) return;
+  const { brands: b } = await API.get('/api/admin/brands');
+  brands = b;
+  render();
+}
+load();
+</script>
+</body>
+</html>

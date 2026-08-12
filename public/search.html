@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Search — M3RAFSH</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body data-page="search">
+<div id="site-header-slot"></div>
+
+<div class="container">
+  <div class="page-title-block">
+    <h1>Search Results</h1>
+    <div class="search-bar-input" style="margin-top:20px;max-width:520px">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="search-input" placeholder="Search products, brands, categories...">
+    </div>
+  </div>
+
+  <div id="brand-results" style="margin:30px 0"></div>
+  <div id="category-results" style="margin:20px 0"></div>
+  <div class="section-head"><h2 style="font-size:22px">Products</h2><p class="text-soft" id="result-count"></p></div>
+  <div class="product-grid" id="results-grid" style="margin-bottom:90px"><div class="spinner"></div></div>
+</div>
+
+<div id="site-footer-slot"></div>
+<script src="/js/api.js"></script>
+<script src="/js/placeholder.js"></script>
+<script src="/js/main.js"></script>
+<script>
+const params = new URLSearchParams(location.search);
+document.getElementById('search-input').value = params.get('q') || '';
+
+let searchTimer;
+document.getElementById('search-input').addEventListener('input', (e) => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => { runSearch(e.target.value); history.replaceState(null, '', '/search.html?q=' + encodeURIComponent(e.target.value)); }, 350);
+});
+
+async function runSearch(q) {
+  document.title = (q ? `"${q}"` : 'Search') + ' — M3RAFSH';
+  const grid = document.getElementById('results-grid');
+  grid.innerHTML = Array(4).fill('<div class="skeleton" style="aspect-ratio:3/4;border-radius:6px"></div>').join('');
+  if (!q) { grid.innerHTML = ''; document.getElementById('result-count').textContent = ''; document.getElementById('brand-results').innerHTML=''; document.getElementById('category-results').innerHTML=''; return; }
+
+  const [{ products, count }, { categories }, { brands }] = await Promise.all([
+    API.get('/api/products?q=' + encodeURIComponent(q)),
+    API.get('/api/categories'),
+    API.get('/api/brands'),
+  ]);
+
+  document.getElementById('result-count').textContent = `${count} result${count === 1 ? '' : 's'}`;
+  grid.innerHTML = products.length ? products.map(productCardHTML).join('') :
+    `<div class="empty-state" style="grid-column:1/-1"><h3>No products found</h3><p>Try a different search term.</p></div>`;
+
+  const matchedBrands = brands.filter(b => b.name.toLowerCase().includes(q.toLowerCase()));
+  document.getElementById('brand-results').innerHTML = matchedBrands.length ? `
+    <div class="section-head"><h2 style="font-size:22px">Brands</h2></div>
+    <div class="brand-grid">${matchedBrands.map(b => `
+      <a href="/brand.html?slug=${b.slug}" class="brand-card">
+        <div class="brand-cover"><img src="${b.cover_url || Placeholder.brandCover(b.slug, b.name)}"></div>
+        <div class="brand-card-body"><h3>${b.name}</h3><p>${b.description || ''}</p></div>
+      </a>`).join('')}</div>` : '';
+
+  const flatCats = categories.flatMap(t => [t, ...t.children]);
+  const matchedCats = flatCats.filter(c => c.name.toLowerCase().includes(q.toLowerCase()));
+  document.getElementById('category-results').innerHTML = matchedCats.length ? `
+    <div class="section-head"><h2 style="font-size:22px">Categories</h2></div>
+    <div class="flex" style="gap:10px;flex-wrap:wrap">${matchedCats.map(c => `<a href="/shop.html?category=${c.slug}" class="btn btn-ghost btn-sm">${c.name}</a>`).join('')}</div>` : '';
+}
+
+runSearch(params.get('q') || '');
+</script>
+</body>
+</html>

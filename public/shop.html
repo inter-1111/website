@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shop — M3RAFSH</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body data-page="shop">
+<div id="site-header-slot"></div>
+
+<div class="container">
+  <div class="breadcrumbs"><a href="/index.html">Home</a> / <span id="bc-current">Shop</span></div>
+  <div class="page-title-block"><h1 id="page-title">Shop All</h1></div>
+
+  <div class="shop-layout">
+    <aside class="filters-panel">
+      <div class="filter-group">
+        <h4>Category</h4>
+        <div id="filter-categories"><div class="skeleton" style="height:80px"></div></div>
+      </div>
+      <div class="filter-group">
+        <h4>Brand</h4>
+        <div id="filter-brands"><div class="skeleton" style="height:60px"></div></div>
+      </div>
+      <div class="filter-group">
+        <h4>Size</h4>
+        <div id="filter-sizes" class="filter-option-list"></div>
+      </div>
+      <div class="filter-group">
+        <h4>Color</h4>
+        <div id="filter-colors" class="color-swatches"></div>
+      </div>
+      <div class="filter-group">
+        <h4>Price</h4>
+        <div class="price-range-inputs">
+          <input type="number" id="min-price" placeholder="Min">
+          <span>–</span>
+          <input type="number" id="max-price" placeholder="Max">
+        </div>
+      </div>
+      <div class="filter-group">
+        <h4>Availability</h4>
+        <label class="filter-option"><input type="checkbox" id="filter-in-stock"> In Stock Only</label>
+      </div>
+      <button class="btn btn-ghost btn-block btn-sm" id="clear-filters" style="margin-top:10px">Clear Filters</button>
+    </aside>
+
+    <main>
+      <div class="search-bar-input">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="shop-search" placeholder="Search products...">
+      </div>
+      <div class="shop-toolbar">
+        <div class="result-count" id="result-count">Loading...</div>
+        <select id="sort-select">
+          <option value="featured">Featured</option>
+          <option value="newest">Newest</option>
+          <option value="popular">Most Popular</option>
+          <option value="price_asc">Price: Low to High</option>
+          <option value="price_desc">Price: High to Low</option>
+        </select>
+      </div>
+      <div class="product-grid" id="product-grid"></div>
+    </main>
+  </div>
+</div>
+
+<div id="site-footer-slot"></div>
+
+<script src="/js/api.js"></script>
+<script src="/js/placeholder.js"></script>
+<script src="/js/main.js"></script>
+<script>
+const params = new URLSearchParams(location.search);
+let state = {
+  category: params.get('category') || '',
+  brand: params.get('brand') || '',
+  size: '', color: '', minPrice: '', maxPrice: '', availability: '',
+  q: params.get('q') || '',
+  sort: params.get('sort') || 'featured',
+};
+if (params.get('filter') === 'new') { state.isNew = '1'; document.getElementById('page-title').textContent = 'New Arrivals'; }
+if (params.get('filter') === 'sale') { document.getElementById('page-title').textContent = 'Sale'; }
+
+let allCategories = [];
+let allBrands = [];
+
+function buildQueryString() {
+  const q = new URLSearchParams();
+  if (state.category) q.set('category', state.category);
+  if (state.brand) q.set('brand', state.brand);
+  if (state.size) q.set('size', state.size);
+  if (state.color) q.set('color', state.color);
+  if (state.minPrice) q.set('minPrice', state.minPrice);
+  if (state.maxPrice) q.set('maxPrice', state.maxPrice);
+  if (state.availability) q.set('availability', state.availability);
+  if (state.q) q.set('q', state.q);
+  if (state.isNew) q.set('isNew', '1');
+  q.set('sort', state.sort);
+  q.set('limit', 60);
+  return q.toString();
+}
+
+async function loadFilters() {
+  const [{ categories }, { brands }] = await Promise.all([API.get('/api/categories'), API.get('/api/brands')]);
+  allCategories = categories; allBrands = brands;
+
+  const catBox = document.getElementById('filter-categories');
+  catBox.innerHTML = categories.map(top => `
+    <div style="margin-bottom:10px">
+      <label class="filter-option"><input type="radio" name="cat" value="${top.slug}" ${state.category === top.slug ? 'checked' : ''}>${top.name}</label>
+      ${top.children.length ? `<div style="padding-left:20px">
+        ${top.children.map(c => `<label class="filter-option"><input type="radio" name="cat" value="${c.slug}" ${state.category === c.slug ? 'checked' : ''}>${c.name}</label>`).join('')}
+      </div>` : ''}
+    </div>`).join('');
+  catBox.querySelectorAll('input[name=cat]').forEach(inp => inp.addEventListener('change', () => { state.category = inp.value; render(); }));
+
+  const brandBox = document.getElementById('filter-brands');
+  brandBox.innerHTML = brands.length ? brands.map(b => `<label class="filter-option"><input type="radio" name="brand" value="${b.slug}" ${state.brand === b.slug ? 'checked' : ''}>${b.name}</label>`).join('')
+    : `<p class="text-soft" style="font-size:13px">No brands yet.</p>`;
+  brandBox.querySelectorAll('input[name=brand]').forEach(inp => inp.addEventListener('change', () => { state.brand = inp.value; render(); }));
+
+  const sizes = ['XS','S','M','L','XL','XXL'];
+  document.getElementById('filter-sizes').innerHTML = sizes.map(s => `<label class="filter-option"><input type="checkbox" data-size="${s}">${s}</label>`).join('');
+  document.querySelectorAll('#filter-sizes input').forEach(inp => inp.addEventListener('change', () => {
+    document.querySelectorAll('#filter-sizes input').forEach(i => { if (i !== inp) i.checked = false; });
+    state.size = inp.checked ? inp.dataset.size : '';
+    render();
+  }));
+
+  const colorMap = { black: '#161616', white: '#f5f5f0', grey: '#9b9b93', navy: '#1f2a44', blue: '#3a6ea5', red: '#a63c3c', green: '#3f6b4d', beige: '#d8c7a8', brown: '#6b4a30', olive: '#6b6b3a', pink: '#dba3ae', cream: '#efe6d3' };
+  document.getElementById('filter-colors').innerHTML = Object.entries(colorMap).map(([name, hex]) =>
+    `<div class="color-swatch" data-color="${name}" style="background:${hex}" title="${name}"></div>`).join('');
+  document.querySelectorAll('.color-swatch').forEach(sw => sw.addEventListener('click', () => {
+    document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
+    const isSame = state.color === sw.dataset.color;
+    state.color = isSame ? '' : sw.dataset.color;
+    if (!isSame) sw.classList.add('active');
+    render();
+  }));
+
+  document.getElementById('min-price').addEventListener('change', e => { state.minPrice = e.target.value; render(); });
+  document.getElementById('max-price').addEventListener('change', e => { state.maxPrice = e.target.value; render(); });
+  document.getElementById('filter-in-stock').addEventListener('change', e => { state.availability = e.target.checked ? 'in_stock' : ''; render(); });
+  document.getElementById('clear-filters').addEventListener('click', () => { location.href = '/shop.html'; });
+  document.getElementById('sort-select').value = state.sort;
+  document.getElementById('sort-select').addEventListener('change', e => { state.sort = e.target.value; render(); });
+  document.getElementById('shop-search').value = state.q;
+  let searchTimer;
+  document.getElementById('shop-search').addEventListener('input', e => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => { state.q = e.target.value; render(); }, 350);
+  });
+
+  if (state.category) {
+    const flatCats = categories.flatMap(t => [t, ...t.children]);
+    const found = flatCats.find(c => c.slug === state.category);
+    if (found) { document.getElementById('page-title').textContent = found.name; document.getElementById('bc-current').textContent = found.name; }
+  } else if (state.brand) {
+    const b = brands.find(x => x.slug === state.brand);
+    if (b) { document.getElementById('page-title').textContent = b.name; document.getElementById('bc-current').textContent = b.name; }
+  }
+}
+
+async function render() {
+  const grid = document.getElementById('product-grid');
+  grid.innerHTML = Array(8).fill('<div class="skeleton" style="aspect-ratio:3/4;border-radius:6px"></div>').join('');
+  const { products, count } = await API.get('/api/products?' + buildQueryString());
+  document.getElementById('result-count').textContent = `${count} product${count === 1 ? '' : 's'}`;
+  grid.innerHTML = products.length ? products.map(productCardHTML).join('') :
+    `<div class="empty-state" style="grid-column:1/-1">
+      <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <h3>No products found</h3>
+      <p>Try adjusting your filters, or check back as more products are added.</p>
+    </div>`;
+}
+
+(async () => { await loadFilters(); render(); })();
+</script>
+</body>
+</html>
