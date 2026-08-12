@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Brands — M3RAFSH</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body data-page="brands">
+<div id="site-header-slot"></div>
+
+<div class="container">
+  <div class="breadcrumbs"><a href="/index.html">Home</a> / Brands</div>
+  <div class="page-title-block"><h1>Local Brands</h1><p class="text-soft" style="margin-top:8px">Meet the independent labels shaping the marketplace.</p></div>
+  <div class="brand-grid" id="brand-grid" style="margin:36px 0 90px"><div class="spinner"></div></div>
+</div>
+
+<div id="site-footer-slot"></div>
+<script src="/js/api.js"></script>
+<script src="/js/placeholder.js"></script>
+<script src="/js/main.js"></script>
+<script>
+async function load() {
+  const { brands } = await API.get('/api/brands');
+  const grid = document.getElementById('brand-grid');
+  grid.innerHTML = brands.length ? brands.map(b => `
+    <a href="/brand.html?slug=${b.slug}" class="brand-card">
+      <div class="brand-cover"><img src="${b.cover_url || Placeholder.brandCover(b.slug, b.name)}" alt="${b.name}"></div>
+      <div class="brand-card-body">
+        <img class="brand-logo" src="${b.logo_url || Placeholder.brandLogo(b.slug, b.name)}" alt="">
+        <h3>${b.name}</h3>
+        <p>${b.description || 'An independent local fashion label.'}</p>
+        <div class="flex justify-between items-center">
+          <span class="text-soft" style="font-size:12.5px">${b.product_count} product${b.product_count === 1 ? '' : 's'}</span>
+          <span class="btn btn-secondary btn-sm">Shop Brand</span>
+        </div>
+      </div>
+    </a>`).join('') :
+    `<div class="empty-state" style="grid-column:1/-1">
+      <h3>No brands yet</h3>
+      <p>Local brands will appear here once an admin adds them from the admin dashboard.</p>
+    </div>`;
+}
+load();
+</script>
+</body>
+</html>

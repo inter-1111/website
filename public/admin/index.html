@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Dashboard — M3RAFSH</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/css/admin.css">
+</head>
+<body class="admin-body">
+<div class="admin-shell">
+  <div id="admin-sidebar-slot"></div>
+  <main class="admin-main">
+    <div class="admin-topbar">
+      <h1>Dashboard</h1>
+    </div>
+    <div class="stat-grid" id="stat-grid"><div class="spinner"></div></div>
+
+    <div class="admin-toolbar"><h3 style="font-size:16px">Recent Orders</h3></div>
+    <div class="admin-table-wrap">
+      <table class="admin-table">
+        <thead><tr><th>Order</th><th>Customer</th><th>Status</th><th>Total</th><th>Date</th></tr></thead>
+        <tbody id="recent-orders-body"><tr><td colspan="5">Loading...</td></tr></tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<script src="/js/api.js"></script>
+<script src="/js/admin.js"></script>
+<script>
+async function load() {
+  const user = await adminGuard('dashboard');
+  if (!user) return;
+  const { stats, recentOrders } = await API.get('/api/admin/stats');
+  document.getElementById('stat-grid').innerHTML = `
+    <div class="stat-card"><div class="label">Total Orders</div><div class="value">${stats.total_orders}</div></div>
+    <div class="stat-card"><div class="label">Total Products</div><div class="value">${stats.total_products}</div></div>
+    <div class="stat-card"><div class="label">Active Brands</div><div class="value">${stats.active_brands}</div></div>
+    <div class="stat-card"><div class="label">Registered Users</div><div class="value">${stats.registered_users}</div></div>
+    <div class="stat-card"><div class="label">Revenue (Demo)</div><div class="value">${formatPrice(stats.revenue)}</div></div>
+    <div class="stat-card"><div class="label">Low Stock Items</div><div class="value">${stats.low_stock}</div></div>
+    <div class="stat-card"><div class="label">Out of Stock</div><div class="value">${stats.out_of_stock}</div></div>
+  `;
+  document.getElementById('recent-orders-body').innerHTML = recentOrders.length ? recentOrders.map(o => `
+    <tr>
+      <td><a href="/admin/order-detail.html?id=${o.id}">${o.order_number}</a></td>
+      <td>${escapeHTML(o.user_name)}</td>
+      <td><span class="status-pill">${o.status}</span></td>
+      <td>${formatPrice(o.total)}</td>
+      <td>${new Date(o.created_at).toLocaleDateString()}</td>
+    </tr>`).join('') : `<tr><td colspan="5">No orders yet.</td></tr>`;
+}
+load();
+function formatPrice(n) { return '$' + Number(n).toFixed(2).replace(/\.00$/, ''); }
+</script>
+</body>
+</html>

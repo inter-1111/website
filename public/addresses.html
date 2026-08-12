@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Addresses — M3RAFSH</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body data-page="addresses">
+<div id="site-header-slot"></div>
+
+<div class="container dash-layout">
+  <div id="dash-nav-slot"></div>
+  <div>
+    <div class="flex justify-between items-center">
+      <div><h1 class="dash-welcome">Addresses</h1><p class="dash-sub">Manage your saved shipping addresses.</p></div>
+      <button class="btn btn-primary btn-sm" id="add-btn">+ Add Address</button>
+    </div>
+    <div id="address-list" style="max-width:560px"><div class="spinner"></div></div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="addr-modal">
+  <div class="modal-box">
+    <button class="modal-close-x" id="modal-close">✕</button>
+    <h3 id="modal-title">Add Address</h3>
+    <input type="hidden" id="edit-id">
+    <div class="field-row"><div class="field"><label>Full Name</label><input id="f-name"></div><div class="field"><label>Label</label><input id="f-label" placeholder="Home, Work..."></div></div>
+    <div class="field"><label>Address Line</label><input id="f-line1"></div>
+    <div class="field-row">
+      <div class="field"><label>City</label><input id="f-city"></div>
+      <div class="field"><label>State</label><input id="f-state"></div>
+      <div class="field"><label>ZIP</label><input id="f-zip"></div>
+    </div>
+    <div class="field"><label>Country</label><input id="f-country"></div>
+    <div class="field"><label>Phone</label><input id="f-phone"></div>
+    <label class="checkbox-row" style="margin-bottom:18px"><input type="checkbox" id="f-default"> Set as default address</label>
+    <button class="btn btn-primary btn-block" id="save-btn">Save Address</button>
+  </div>
+</div>
+
+<div id="site-footer-slot"></div>
+<script src="/js/api.js"></script>
+<script src="/js/placeholder.js"></script>
+<script src="/js/main.js"></script>
+<script>
+let addresses = [];
+
+function openModal(addr) {
+  document.getElementById('modal-title').textContent = addr ? 'Edit Address' : 'Add Address';
+  document.getElementById('edit-id').value = addr ? addr.id : '';
+  document.getElementById('f-name').value = addr ? addr.full_name : SITE.user.name;
+  document.getElementById('f-label').value = addr ? addr.label : '';
+  document.getElementById('f-line1').value = addr ? addr.line1 : '';
+  document.getElementById('f-city').value = addr ? addr.city : '';
+  document.getElementById('f-state').value = addr ? addr.state : '';
+  document.getElementById('f-zip').value = addr ? addr.zip : '';
+  document.getElementById('f-country').value = addr ? addr.country : '';
+  document.getElementById('f-phone').value = addr ? addr.phone : '';
+  document.getElementById('f-default').checked = addr ? !!addr.is_default : addresses.length === 0;
+  document.getElementById('addr-modal').classList.add('open');
+}
+document.getElementById('add-btn').addEventListener('click', () => openModal(null));
+document.getElementById('modal-close').addEventListener('click', () => document.getElementById('addr-modal').classList.remove('open'));
+
+document.getElementById('save-btn').addEventListener('click', async () => {
+  const id = document.getElementById('edit-id').value;
+  const payload = {
+    full_name: document.getElementById('f-name').value,
+    label: document.getElementById('f-label').value,
+    line1: document.getElementById('f-line1').value,
+    city: document.getElementById('f-city').value,
+    state: document.getElementById('f-state').value,
+    zip: document.getElementById('f-zip').value,
+    country: document.getElementById('f-country').value,
+    phone: document.getElementById('f-phone').value,
+    is_default: document.getElementById('f-default').checked,
+  };
+  if (!payload.line1 || !payload.city) { Toast.show('Please enter an address line and city.'); return; }
+  if (id) await API.put('/api/addresses/' + id, payload); else await API.post('/api/addresses', payload);
+  document.getElementById('addr-modal').classList.remove('open');
+  Toast.show('Address saved.');
+  load();
+});
+
+function render() {
+  const list = document.getElementById('address-list');
+  list.innerHTML = addresses.length ? addresses.map(a => `
+    <div class="address-card">
+      <div class="label-row">
+        <span class="tag">${a.label || 'Address'}</span>
+        ${a.is_default ? '<span class="default-badge">Default</span>' : ''}
+      </div>
+      <div style="font-weight:600">${a.full_name}</div>
+      <div class="text-soft" style="font-size:13.5px">${a.line1}, ${a.city}${a.state ? ', ' + a.state : ''} ${a.zip}<br>${a.country || ''}</div>
+      <div class="card-actions-row">
+        <button class="js-edit" data-id="${a.id}">Edit</button>
+        <button class="js-delete" data-id="${a.id}">Delete</button>
+        ${!a.is_default ? `<button class="js-default" data-id="${a.id}">Set as Default</button>` : ''}
+      </div>
+    </div>`).join('') : `<div class="empty-state"><h3>No addresses saved</h3><p>Add an address to speed up checkout.</p></div>`;
+
+  list.querySelectorAll('.js-edit').forEach(b => b.addEventListener('click', () => openModal(addresses.find(a => a.id == b.dataset.id))));
+  list.querySelectorAll('.js-delete').forEach(b => b.addEventListener('click', async () => {
+    await API.del('/api/addresses/' + b.dataset.id); Toast.show('Address deleted.'); load();
+  }));
+  list.querySelectorAll('.js-default').forEach(b => b.addEventListener('click', async () => {
+    await API.put('/api/addresses/' + b.dataset.id, { is_default: true }); load();
+  }));
+}
+
+async function load() {
+  if (!requireAuthOrRedirect()) return;
+  document.getElementById('dash-nav-slot').innerHTML = dashNavHTML('addresses');
+  initDashLogout();
+  const { addresses: a } = await API.get('/api/addresses');
+  addresses = a;
+  render();
+}
+document.addEventListener('chrome:ready', load);
+</script>
+</body>
+</html>

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Order Details — M3RAFSH</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+<style>
+.track-steps { display: flex; margin: 28px 0 36px; }
+.track-step { flex: 1; text-align: center; position: relative; }
+.track-step .dot { width: 14px; height: 14px; border-radius: 50%; background: var(--color-line); margin: 0 auto 8px; position: relative; z-index: 2; }
+.track-step.done .dot { background: var(--color-success); }
+.track-step .line { position: absolute; top: 6px; left: -50%; width: 100%; height: 2px; background: var(--color-line); z-index: 1; }
+.track-step:first-child .line { display: none; }
+.track-step.done .line { background: var(--color-success); }
+.track-step span { font-size: 11.5px; color: var(--color-ink-soft); font-weight: 600; }
+.track-step.done span { color: var(--color-success); }
+</style>
+</head>
+<body data-page="order-detail">
+<div id="site-header-slot"></div>
+
+<div class="container dash-layout">
+  <div id="dash-nav-slot"></div>
+  <div id="order-detail-root"><div class="spinner"></div></div>
+</div>
+
+<div id="site-footer-slot"></div>
+<script src="/js/api.js"></script>
+<script src="/js/placeholder.js"></script>
+<script src="/js/main.js"></script>
+<script>
+const STATUS_FLOW = ['Processing', 'Confirmed', 'Shipped', 'Out for Delivery', 'Delivered'];
+
+async function load() {
+  if (!requireAuthOrRedirect()) return;
+  document.getElementById('dash-nav-slot').innerHTML = dashNavHTML('orders');
+  initDashLogout();
+  const id = new URLSearchParams(location.search).get('id');
+  try {
+    const { order, items } = await API.get('/api/orders/' + id);
+    const currentIdx = STATUS_FLOW.indexOf(order.status);
+    const cancelled = order.status === 'Cancelled';
+
+    document.getElementById('order-detail-root').innerHTML = `
+      <div class="flex justify-between items-center" style="margin-bottom:6px">
+        <h1 class="dash-welcome" style="margin-bottom:0">${order.order_number}</h1>
+        <span class="status-pill">${order.status}</span>
+      </div>
+      <p class="dash-sub">Placed on ${new Date(order.created_at).toLocaleDateString()}</p>
+
+      ${!cancelled ? `<div class="track-steps">
+        ${STATUS_FLOW.map((s, i) => `<div class="track-step ${i <= currentIdx ? 'done' : ''}"><div class="line"></div><div class="dot"></div><span>${s}</span></div>`).join('')}
+      </div>` : ''}
+
+      <div class="checkout-section">
+        <h3>Items</h3>
+        ${items.map(it => `
+          <div class="mini-order-item">
+            <img src="${it.image_url || Placeholder.productImage('o'+it.id, it.product_name)}">
+            <div style="flex:1">
+              <div style="font-weight:600">${it.product_name}</div>
+              <div class="text-soft">${it.brand_name} · ${[it.size, it.color].filter(Boolean).join(' / ') || 'One size'} · Qty ${it.qty}</div>
+            </div>
+            <div>${formatPrice(it.price * it.qty)}</div>
+          </div>`).join('')}
+        <div class="summary-row"><span>Subtotal</span><span>${formatPrice(order.subtotal)}</span></div>
+        <div class="summary-row"><span>Shipping</span><span>${order.shipping === 0 ? 'Free' : formatPrice(order.shipping)}</span></div>
+        <div class="summary-row total"><span>Total</span><span>${formatPrice(order.total)}</span></div>
+      </div>
+
+      <div class="checkout-section">
+        <h3>Shipping Address</h3>
+        <p style="font-size:14px">${order.address.full_name || ''}<br>${order.address.line1 || ''}, ${order.address.city || ''}${order.address.state ? ', ' + order.address.state : ''} ${order.address.zip || ''}<br>${order.address.country || ''}</p>
+      </div>
+
+      <div class="checkout-section">
+        <h3>Payment Method</h3>
+        <p style="font-size:14px">${order.payment_snapshot}</p>
+      </div>`;
+  } catch (e) {
+    document.getElementById('order-detail-root').innerHTML = `<div class="empty-state"><h3>Order not found</h3><a href="/orders.html" class="btn btn-primary" style="margin-top:16px">Back to Orders</a></div>`;
+  }
+}
+document.addEventListener('chrome:ready', load);
+</script>
+</body>
+</html>

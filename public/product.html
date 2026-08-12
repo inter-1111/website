@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Product — M3RAFSH</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body data-page="product">
+<div id="site-header-slot"></div>
+
+<div class="container">
+  <div class="breadcrumbs">
+    <a href="/index.html">Home</a> / <a href="/shop.html" id="bc-cat-link">Shop</a> / <span id="bc-product"></span>
+  </div>
+
+  <div id="pdp-root" class="product-page-grid">
+    <div class="skeleton" style="aspect-ratio:4/5;border-radius:14px"></div>
+    <div>
+      <div class="skeleton" style="height:20px;width:120px;margin-bottom:14px"></div>
+      <div class="skeleton" style="height:36px;width:70%;margin-bottom:14px"></div>
+      <div class="skeleton" style="height:24px;width:100px"></div>
+    </div>
+  </div>
+
+  <section id="related-section" style="display:none" class="section-tight">
+    <div class="section-head"><h2>You May Also Like</h2></div>
+    <div class="product-grid" id="related-grid"></div>
+  </section>
+</div>
+
+<div id="site-footer-slot"></div>
+<script src="/js/api.js"></script>
+<script src="/js/placeholder.js"></script>
+<script src="/js/main.js"></script>
+<script>
+const idParam = new URLSearchParams(location.search).get('id');
+let product, selectedVariant = { size: null, color: null };
+let qty = 1;
+let galleryIndex = 0;
+
+function stockForSelection() {
+  if (!product.variants.length) return null;
+  const match = product.variants.find(v => (!selectedVariant.size || v.size === selectedVariant.size) && (!selectedVariant.color || v.color === selectedVariant.color));
+  return match || null;
+}
+
+function renderPDP() {
+  const images = product.images.length ? product.images : [Placeholder.productImage('p' + product.id, product.name)];
+  const price = product.discount_price || product.price;
+  const variant = stockForSelection();
+
+  document.body.dataset.productId = product.id;
+  document.title = product.name + ' — M3RAFSH';
+  document.getElementById('bc-product').textContent = product.name;
+  if (product.category) {
+    document.getElementById('bc-cat-link').textContent = product.category.name;
+    document.getElementById('bc-cat-link').href = '/shop.html?category=' + product.category.slug;
+  }
+
+  document.getElementById('pdp-root').innerHTML = `
+    <div>
+      <div class="gallery-main" id="gallery-main"><img id="gallery-main-img" src="${images[0]}" alt="${product.name}"></div>
+      <div class="gallery-thumbs" id="gallery-thumbs">
+        ${images.map((img, i) => `<div class="gallery-thumb ${i === 0 ? 'active' : ''}" data-idx="${i}"><img src="${img}"></div>`).join('')}
+      </div>
+    </div>
+    <div>
+      <div class="pdp-brand">${product.brand ? `<a href="/brand.html?slug=${product.brand.slug}">${product.brand.name}</a>` : ''}</div>
+      <h1 class="pdp-title">${product.name}</h1>
+      <div class="pdp-price">
+        ${product.discount_price ? `<span class="price-sale">${formatPrice(product.discount_price)}</span><span class="price-strike">${formatPrice(product.price)}</span>` : `<span>${formatPrice(price)}</span>`}
+      </div>
+      <p class="pdp-desc">${product.description || 'No description provided for this product yet.'}</p>
+
+      ${product.colors.length ? `
+      <div class="option-block">
+        <div class="option-block-head"><h4>Color${selectedVariant.color ? ': ' + selectedVariant.color : ''}</h4></div>
+        <div class="color-pills" id="color-pills">
+          ${product.colors.map(c => `<div class="color-swatch" data-color="${c}" style="background:${colorHex(c)}" title="${c}"></div>`).join('')}
+        </div>
+      </div>` : ''}
+
+      ${product.sizes.length ? `
+      <div class="option-block">
+        <div class="option-block-head"><h4>Size${selectedVariant.size ? ': ' + selectedVariant.size : ''}</h4><button id="size-guide-btn">Size Guide</button></div>
+        <div class="size-pills" id="size-pills">
+          ${product.sizes.map(s => `<div class="size-pill" data-size="${s}">${s}</div>`).join('')}
+        </div>
+      </div>` : ''}
+
+      <div class="option-block">
+        <div class="option-block-head"><h4>Quantity</h4></div>
+        <div class="qty-selector">
+          <button id="qty-minus">−</button><span id="qty-val">${qty}</span><button id="qty-plus">+</button>
+        </div>
+      </div>
+
+      <div id="stock-note-box"></div>
+
+      <div class="pdp-actions">
+        <button class="btn btn-primary" id="add-to-cart-btn">Add to Cart</button>
+        <button class="btn btn-ghost js-fav-btn" id="save-btn" data-product-id="${product.id}">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.8 1-1a5.5 5.5 0 0 0 0-7.6z"/></svg>
+          Save
+        </button>
+      </div>
+
+      <div class="pdp-accordion">
+        <div class="accordion-item">
+          <div class="accordion-head">Shipping Information <svg class="accordion-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div>
+          <div class="accordion-body">Standard shipping takes 3–7 business days. Free shipping on orders over $1500. Orders are processed within 1–2 business days.</div>
+        </div>
+        <div class="accordion-item">
+          <div class="accordion-head">Returns <svg class="accordion-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div>
+          <div class="accordion-body">Items may be returned within 30 days of delivery in original condition. Return shipping is the responsibility of the customer unless the item arrived damaged or incorrect.</div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.querySelectorAll('.gallery-thumb').forEach(t => t.addEventListener('click', () => {
+    galleryIndex = Number(t.dataset.idx);
+    document.getElementById('gallery-main-img').src = images[galleryIndex];
+    document.querySelectorAll('.gallery-thumb').forEach(x => x.classList.remove('active'));
+    t.classList.add('active');
+  }));
+  document.getElementById('gallery-main').addEventListener('click', function () { this.classList.toggle('zoomed'); });
+
+  document.querySelectorAll('#color-pills .color-swatch').forEach(sw => sw.addEventListener('click', () => {
+    selectedVariant.color = selectedVariant.color === sw.dataset.color ? null : sw.dataset.color;
+    renderPDP();
+  }));
+  document.querySelectorAll('#size-pills .size-pill').forEach(sp => sp.addEventListener('click', () => {
+    selectedVariant.size = selectedVariant.size === sp.dataset.size ? null : sp.dataset.size;
+    renderPDP();
+  }));
+  document.querySelectorAll('#color-pills .color-swatch').forEach(sw => { if (sw.dataset.color === selectedVariant.color) sw.classList.add('active'); });
+  document.querySelectorAll('#size-pills .size-pill').forEach(sp => { if (sp.dataset.size === selectedVariant.size) sp.classList.add('active'); });
+
+  document.getElementById('qty-minus').addEventListener('click', () => { qty = Math.max(1, qty - 1); document.getElementById('qty-val').textContent = qty; });
+  document.getElementById('qty-plus').addEventListener('click', () => { qty = qty + 1; document.getElementById('qty-val').textContent = qty; });
+
+  document.querySelectorAll('.accordion-head').forEach(h => h.addEventListener('click', () => h.parentElement.classList.toggle('open')));
+
+  const saveBtn = document.getElementById('save-btn');
+  saveBtn.addEventListener('click', () => toggleFavorite(product.id, saveBtn));
+  checkIfSaved();
+
+  const stockBox = document.getElementById('stock-note-box');
+  const addBtn = document.getElementById('add-to-cart-btn');
+  if (product.variants.length && !variant) {
+    stockBox.innerHTML = `<p class="stock-note">Select options to check availability.</p>`;
+    addBtn.disabled = (selectedVariant.size || selectedVariant.color) ? false : (product.sizes.length > 0 || product.colors.length > 0);
+  } else {
+    const stock = variant ? variant.stock : (product.in_stock ? 99 : 0);
+    if (stock <= 0) { stockBox.innerHTML = `<p class="stock-note out">Out of stock</p>`; addBtn.disabled = true; addBtn.textContent = 'Out of Stock'; }
+    else if (stock <= 5) { stockBox.innerHTML = `<p class="stock-note low">Only ${stock} left in stock</p>`; addBtn.disabled = false; }
+    else { stockBox.innerHTML = `<p class="stock-note in">In stock</p>`; addBtn.disabled = false; }
+  }
+
+  addBtn.addEventListener('click', async () => {
+    if (product.sizes.length && !selectedVariant.size) { Toast.show('Please select a size.'); return; }
+    if (product.colors.length && !selectedVariant.color) { Toast.show('Please select a color.'); return; }
+    const v = stockForSelection();
+    await addToCart(product.id, v ? v.id : null, qty);
+  });
+}
+
+async function checkIfSaved() {
+  if (!SITE.user) return;
+  try {
+    const { items } = await API.get('/api/wishlist');
+    if (items.find(i => i.id === product.id)) document.getElementById('save-btn').classList.add('active');
+  } catch (e) {}
+}
+
+function colorHex(name) {
+  const map = { black: '#161616', white: '#f5f5f0', grey: '#9b9b93', gray: '#9b9b93', navy: '#1f2a44', blue: '#3a6ea5', red: '#a63c3c', green: '#3f6b4d', beige: '#d8c7a8', brown: '#6b4a30', olive: '#6b6b3a', pink: '#dba3ae', cream: '#efe6d3', khaki: '#b7ad86', orange: '#c1622d', purple: '#6b4a7a', yellow: '#d8bf4a' };
+  return map[name.toLowerCase()] || '#ccc';
+}
+
+async function load() {
+  if (!idParam) { location.href = '/shop.html'; return; }
+  try {
+    const { product: p, related } = await API.get('/api/products/' + encodeURIComponent(idParam));
+    product = p;
+    renderPDP();
+    if (related.length) {
+      document.getElementById('related-section').style.display = '';
+      document.getElementById('related-grid').innerHTML = related.map(productCardHTML).join('');
+    }
+  } catch (e) {
+    document.getElementById('pdp-root').innerHTML = `<div class="empty-state" style="grid-column:1/-1"><h3>Product not found</h3><a href="/shop.html" class="btn btn-primary" style="margin-top:16px">Back to Shop</a></div>`;
+  }
+}
+document.addEventListener('chrome:ready', load);
+</script>
+</body>
+</html>
